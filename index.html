@@ -8,40 +8,49 @@
             margin: 0;
             font-family: Arial, sans-serif;
             background: linear-gradient(to bottom right, lightblue, lightgreen);
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
             color: #333;
         }
-        .logo {
-            margin-top: 50px;
+        .logo img {
+            max-width: 200px;
+            margin-bottom: 20px;
         }
         h1 {
-            margin-top: 20px;
+            margin-bottom: 30px;
             font-size: 2em;
             font-weight: bold;
+            text-align: center;
         }
         .button-container {
-            margin-top: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 250px;
         }
-        a button {
-            padding: 15px 30px;
+        button {
+            padding: 15px;
             font-size: 1.1em;
-            margin: 15px;
             cursor: pointer;
             background-color: #007BFF;
             color: white;
             border: none;
             border-radius: 8px;
-            transition: 0.3s;
+            transition: background 0.3s;
         }
-        a button:hover {
+        button:hover {
             background-color: #0056b3;
         }
     </style>
 </head>
 <body>
+
     <!-- Logo -->
     <div class="logo">
-        <img src="dr_labs_logo.png" alt="Dr. Labs Logo" width="200">
+        <img src="dr_labs_logo.png" alt="Dr. Labs Logo">
     </div>
 
     <!-- Welcome Text -->
@@ -49,9 +58,10 @@
 
     <!-- Buttons -->
     <div class="button-container">
-        <a href="admin_login.html" target="_blank"><button>Admin Login</button></a>
-        <a href="agent_login.html" target="_blank"><button>Agent Login</button></a>
-        <a href="report.html" target="_blank"><button>Report</button></a>
+        <button onclick="location.href='admin_login.html'">Admin Login</button>
+        <button onclick="location.href='agent_login.html'">Agent Login</button>
+        <button onclick="location.href='report.html'">Report</button>
     </div>
+
 </body>
 </html>
