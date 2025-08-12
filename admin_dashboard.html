@@ -4,141 +4,112 @@
 <meta charset="UTF-8">
 <title>Admin Dashboard - Dr. Labs</title>
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background: linear-gradient(to bottom right, lightblue, lightgreen);
-        text-align: center;
-        padding: 20px;
-    }
-    h1 {
-        margin-bottom: 10px;
-    }
-    .section {
-        background: white;
-        padding: 15px;
-        margin: 20px auto;
-        border-radius: 8px;
-        width: 80%;
-        max-width: 600px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    input, select, button {
-        padding: 8px;
-        margin: 5px;
-        width: calc(100% - 20px);
-        border: 1px solid #ccc;
-        border-radius: 4px;
-    }
-    button {
-        background: #007BFF;
-        color: white;
-        border: none;
-        cursor: pointer;
-    }
-    button:hover {
-        background: #0056b3;
-    }
-    .logout {
-        position: absolute;
-        top: 10px;
-        right: 20px;
-        background: red;
-    }
+  body{font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,lightblue,lightgreen);margin:0;padding:18px}
+  header{display:flex;justify-content:space-between;align-items:center;background:#007bff;color:#fff;padding:12px;border-radius:8px}
+  .container{max-width:900px;margin:18px auto}
+  .card{background:#fff;padding:12px;border-radius:8px;margin-bottom:12px}
+  input,select,button,textarea{width:100%;padding:8px;margin:6px 0;border-radius:6px;border:1px solid #ccc}
+  button{background:#007bff;color:#fff;border:0;padding:10px;border-radius:6px;cursor:pointer}
+  .small{display:flex;gap:8px}
+  .logout{background:#dc3545}
 </style>
 </head>
 <body>
+  <header>
+    <div>Admin Dashboard — Dr. Labs</div>
+    <div>
+      <span id="adminName">Admin</span>
+      <button class="logout" onclick="logout()">Logout</button>
+    </div>
+  </header>
 
-<h1>Admin Dashboard</h1>
-<button class="logout" onclick="logout()">Logout</button>
+  <div class="container">
+    <div class="card">
+      <h3>Create Agent Credential</h3>
+      <input id="agentU" placeholder="Username">
+      <input id="agentP" placeholder="Password">
+      <input id="agentN" placeholder="Full Name">
+      <button onclick="createAgent()">Create Agent</button>
+    </div>
 
-<div class="section">
-    <h3>Create Agent Credential</h3>
-    <input type="text" id="agentUsername" placeholder="Username" required>
-    <input type="text" id="agentPassword" placeholder="Password" required>
-    <input type="text" id="agentName" placeholder="Agent Name" required>
-    <button onclick="createAgent()">Submit</button>
-</div>
+    <div class="card">
+      <h3>Create Technician</h3>
+      <input id="techN" placeholder="Technician Name">
+      <input id="techE" placeholder="Employee ID">
+      <input id="techL" placeholder="Location">
+      <button onclick="createTechnician()">Create Technician</button>
+    </div>
 
-<div class="section">
-    <h3>Create Technician Details</h3>
-    <input type="text" id="techName" placeholder="Technician Name" required>
-    <input type="text" id="techEmpId" placeholder="Employee ID" required>
-    <input type="text" id="techLocation" placeholder="Location" required>
-    <button onclick="createTechnician()">Submit</button>
-</div>
+    <div class="card">
+      <h3>Create Test</h3>
+      <input id="testN" placeholder="Test Name">
+      <input id="testC" placeholder="Cost">
+      <input id="testCode" placeholder="Code">
+      <button onclick="createTest()">Create Test</button>
+    </div>
 
-<div class="section">
-    <h3>Create Test</h3>
-    <input type="text" id="testName" placeholder="Test Name" required>
-    <input type="number" id="testCost" placeholder="Cost" required>
-    <input type="text" id="testCode" placeholder="Test Code" required>
-    <button onclick="createTest()">Submit</button>
-</div>
+    <div class="card">
+      <h3>Create Package</h3>
+      <input id="pkgN" placeholder="Package Name">
+      <input id="pkgC" placeholder="Cost">
+      <input id="pkgCode" placeholder="Code">
+      <button onclick="createPackage()">Create Package</button>
+    </div>
 
-<div class="section">
-    <h3>Create Package</h3>
-    <input type="text" id="packageName" placeholder="Package Name" required>
-    <input type="number" id="packageCost" placeholder="Cost" required>
-    <input type="text" id="packageCode" placeholder="Package Code" required>
-    <button onclick="createPackage()">Submit</button>
-</div>
-
-<div class="section">
-    <h3>Create Discount</h3>
-    <input type="text" id="discountValue" placeholder="Discount (e.g. 10%)" required>
-    <button onclick="createDiscount()">Submit</button>
-</div>
+    <div class="card">
+      <h3>Create Discount</h3>
+      <input id="discV" placeholder="Discount (e.g. 10%)">
+      <button onclick="createDiscount()">Create Discount</button>
+    </div>
+  </div>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbychu9AqOmWGUPEbjiofDMDJZ4dukfQyhEVYZTfBEBl1uWoZI02mCPB9pQP6D9Kk2c3Dw/exec";
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyKsG28Vso10fvXim3w9aAEnOwS5GO3IIoxSyUSOZyrG4U1DcDbyfUraYhTPzleNJrTgA/exec'; // replace after deploy
+document.getElementById('adminName').innerText = localStorage.getItem('adminName') || 'Admin';
 
-function postData(action, params) {
-    return fetch(WEB_APP_URL + "?action=" + action + "&" + new URLSearchParams(params))
-        .then(res => res.json());
+function post(action, params){
+  return fetch(WEB_APP_URL + '?action=' + action + '&' + new URLSearchParams(params)).then(r=>r.json());
 }
 
-function createAgent() {
-    postData("createAgentCredential", {
-        username: document.getElementById("agentUsername").value,
-        password: document.getElementById("agentPassword").value,
-        name: document.getElementById("agentName").value
-    }).then(r => alert(r.success ? "Agent Created!" : "Failed to create agent"));
+function createAgent(){
+  const username = document.getElementById('agentU').value.trim();
+  const password = document.getElementById('agentP').value.trim();
+  const name = document.getElementById('agentN').value.trim();
+  if(!username||!password||!name) return alert('Fill all fields');
+  post('createAgentCredential',{ username, password, name }).then(j=>{ if(j.success){ alert('Agent created'); } else alert('Failed'); });
 }
 
-function createTechnician() {
-    postData("createTechnician", {
-        name: document.getElementById("techName").value,
-        empId: document.getElementById("techEmpId").value,
-        location: document.getElementById("techLocation").value
-    }).then(r => alert(r.success ? "Technician Created!" : "Failed to create technician"));
+function createTechnician(){
+  const name = document.getElementById('techN').value.trim();
+  const empId = document.getElementById('techE').value.trim();
+  const location = document.getElementById('techL').value.trim();
+  if(!name) return alert('Fill technician name');
+  post('createTechnician',{ name, empId, location }).then(j=> j.success ? alert('Technician created') : alert('Failed'));
 }
 
-function createTest() {
-    postData("createTest", {
-        name: document.getElementById("testName").value,
-        cost: document.getElementById("testCost").value,
-        code: document.getElementById("testCode").value
-    }).then(r => alert(r.success ? "Test Created!" : "Failed to create test"));
+function createTest(){
+  const name = document.getElementById('testN').value.trim();
+  const cost = document.getElementById('testC').value.trim();
+  const code = document.getElementById('testCode').value.trim();
+  if(!name) return alert('Fill test name');
+  post('createTest',{ name, cost, code }).then(j=> j.success ? alert('Test added') : alert('Failed'));
 }
 
-function createPackage() {
-    postData("createPackage", {
-        name: document.getElementById("packageName").value,
-        cost: document.getElementById("packageCost").value,
-        code: document.getElementById("packageCode").value
-    }).then(r => alert(r.success ? "Package Created!" : "Failed to create package"));
+function createPackage(){
+  const name = document.getElementById('pkgN').value.trim();
+  const cost = document.getElementById('pkgC').value.trim();
+  const code = document.getElementById('pkgCode').value.trim();
+  if(!name) return alert('Fill package name');
+  post('createPackage',{ name, cost, code }).then(j=> j.success ? alert('Package added') : alert('Failed'));
 }
 
-function createDiscount() {
-    postData("createDiscount", {
-        discount: document.getElementById("discountValue").value
-    }).then(r => alert(r.success ? "Discount Created!" : "Failed to create discount"));
+function createDiscount(){
+  const d = document.getElementById('discV').value.trim();
+  if(!d) return alert('Fill discount');
+  post('createDiscount',{ discount: d }).then(j=> j.success ? alert('Discount added') : alert('Failed'));
 }
 
-function logout() {
-    window.location.href = "index.html";
-}
+function logout(){ localStorage.removeItem('adminName'); location.href='index.html'; }
 </script>
-
 </body>
 </html>
