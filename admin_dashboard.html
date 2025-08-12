@@ -4,91 +4,138 @@
 <meta charset="UTF-8">
 <title>Admin Dashboard - Dr. Labs</title>
 <style>
-    body { font-family: Arial; background: linear-gradient(to bottom right, lightblue, lightgreen); padding: 20px; }
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(to bottom right, lightblue, lightgreen);
+        padding: 20px;
+    }
     h1 { text-align: center; }
-    .section { background: white; padding: 15px; margin: 20px auto; border-radius: 8px; width: 90%; }
-    input, select, button { margin: 5px; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
-    button { background: #007BFF; color: white; border: none; cursor: pointer; }
-    button:hover { background: #0056b3; }
+    .section {
+        background: white;
+        padding: 15px;
+        margin: 10px auto;
+        border-radius: 8px;
+        max-width: 600px;
+    }
+    input, button {
+        padding: 8px;
+        margin: 5px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+    button {
+        background: #007BFF;
+        color: white;
+        cursor: pointer;
+        border: none;
+    }
+    button:hover {
+        background: #0056b3;
+    }
 </style>
 </head>
 <body>
-<h1>Admin Dashboard</h1>
-<div><button onclick="logout()">Logout</button></div>
+    <h1>Admin Dashboard</h1>
 
-<div class="section">
-    <h3>Create Agent</h3>
-    <input id="agentName" placeholder="Agent Username">
-    <input id="agentPass" placeholder="Agent Password">
-    <button onclick="createAgent()">Create Agent</button>
-</div>
+    <div class="section">
+        <h3>Create Agent Credential</h3>
+        <input type="text" id="agentUser" placeholder="Agent Username">
+        <input type="text" id="agentPass" placeholder="Agent Password">
+        <button onclick="createAgent()">Submit</button>
+    </div>
 
-<div class="section">
-    <h3>Create Technician</h3>
-    <input id="techName" placeholder="Technician Name">
-    <input id="techId" placeholder="Employee ID">
-    <input id="techLoc" placeholder="Location">
-    <button onclick="createTechnician()">Create Technician</button>
-</div>
+    <div class="section">
+        <h3>Create Technician Details</h3>
+        <input type="text" id="techName" placeholder="Technician Name">
+        <input type="text" id="techId" placeholder="Employee ID">
+        <input type="text" id="techLoc" placeholder="Location">
+        <button onclick="createTechnician()">Submit</button>
+    </div>
 
-<div class="section">
-    <h3>Add Test</h3>
-    <input id="testName" placeholder="Test Name">
-    <input id="testCost" placeholder="Cost">
-    <input id="testCode" placeholder="Code">
-    <button onclick="createTest()">Add Test</button>
-</div>
+    <div class="section">
+        <h3>Create Test</h3>
+        <input type="text" id="testName" placeholder="Test Name">
+        <input type="number" id="testCost" placeholder="Cost">
+        <input type="text" id="testCode" placeholder="Code">
+        <button onclick="createTest()">Submit</button>
+    </div>
 
-<div class="section">
-    <h3>Add Package</h3>
-    <input id="pkgName" placeholder="Package Name">
-    <input id="pkgCost" placeholder="Cost">
-    <input id="pkgCode" placeholder="Code">
-    <button onclick="createPackage()">Add Package</button>
-</div>
+    <div class="section">
+        <h3>Create Package</h3>
+        <input type="text" id="pkgName" placeholder="Package Name">
+        <input type="number" id="pkgCost" placeholder="Cost">
+        <input type="text" id="pkgCode" placeholder="Code">
+        <button onclick="createPackage()">Submit</button>
+    </div>
 
-<div class="section">
-    <h3>Add Discount</h3>
-    <input id="discountValue" placeholder="Discount %">
-    <button onclick="createDiscount()">Add Discount</button>
-</div>
+    <div class="section">
+        <h3>Create Discount</h3>
+        <input type="text" id="discountVal" placeholder="e.g., 10%">
+        <button onclick="createDiscount()">Submit</button>
+    </div>
+
+    <br>
+    <button onclick="logout()">Logout</button>
+    <button onclick="location.href='index.html'">Back</button>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzCR-SayJVb0CUqY6UvGZlHdF0ZvfBejMR2qDndRI8dEVP1Lofq3BYnBkWpMl35pVyudg/exec"; // Replace with your Web App URL
-if (!sessionStorage.getItem("adminUser")) {
-    window.location.href = "admin_login.html";
-}
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxBJHuzAe1EN6npzN-1W6Uc-azhf8-qkm3D6swOqeY3tiNgvXe9wBnA9eI4mPYntS26kw/exec"; // Update with your deployed Apps Script URL
 
-function logout() {
-    sessionStorage.removeItem("adminUser");
-    window.location.href = "admin_login.html";
+if (!sessionStorage.getItem("isAdmin")) {
+    location.href = "admin_login.html";
 }
 
 function createAgent() {
-    const name = document.getElementById("agentName").value;
-    const pass = document.getElementById("agentPass").value;
-    fetch(`${WEB_APP_URL}?action=createAgent&username=${encodeURIComponent(name)}&password=${encodeURIComponent(pass)}`)
-    .then(r=>r.json()).then(d=>alert(d.message));
+    const user = document.getElementById("agentUser").value.trim();
+    const pass = document.getElementById("agentPass").value.trim();
+    if (!user || !pass) return alert("Enter all fields");
+    fetch(`${WEB_APP_URL}?action=createAgent&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`)
+    .then(r => r.json())
+    .then(res => alert(res.message || "Agent created"));
 }
 
 function createTechnician() {
-    fetch(`${WEB_APP_URL}?action=createTechnician&name=${encodeURIComponent(document.getElementById("techName").value)}&id=${encodeURIComponent(document.getElementById("techId").value)}&location=${encodeURIComponent(document.getElementById("techLoc").value)}`)
-    .then(r=>r.json()).then(d=>alert(d.message));
+    const name = document.getElementById("techName").value.trim();
+    const id = document.getElementById("techId").value.trim();
+    const loc = document.getElementById("techLoc").value.trim();
+    if (!name || !id || !loc) return alert("Enter all fields");
+    fetch(`${WEB_APP_URL}?action=createTechnician&name=${encodeURIComponent(name)}&empId=${encodeURIComponent(id)}&location=${encodeURIComponent(loc)}`)
+    .then(r => r.json())
+    .then(res => alert(res.message || "Technician created"));
 }
 
 function createTest() {
-    fetch(`${WEB_APP_URL}?action=createTest&name=${encodeURIComponent(document.getElementById("testName").value)}&cost=${encodeURIComponent(document.getElementById("testCost").value)}&code=${encodeURIComponent(document.getElementById("testCode").value)}`)
-    .then(r=>r.json()).then(d=>alert(d.message));
+    const name = document.getElementById("testName").value.trim();
+    const cost = document.getElementById("testCost").value.trim();
+    const code = document.getElementById("testCode").value.trim();
+    if (!name || !cost || !code) return alert("Enter all fields");
+    fetch(`${WEB_APP_URL}?action=createTest&name=${encodeURIComponent(name)}&cost=${encodeURIComponent(cost)}&code=${encodeURIComponent(code)}`)
+    .then(r => r.json())
+    .then(res => alert(res.message || "Test created"));
 }
 
 function createPackage() {
-    fetch(`${WEB_APP_URL}?action=createPackage&name=${encodeURIComponent(document.getElementById("pkgName").value)}&cost=${encodeURIComponent(document.getElementById("pkgCost").value)}&code=${encodeURIComponent(document.getElementById("pkgCode").value)}`)
-    .then(r=>r.json()).then(d=>alert(d.message));
+    const name = document.getElementById("pkgName").value.trim();
+    const cost = document.getElementById("pkgCost").value.trim();
+    const code = document.getElementById("pkgCode").value.trim();
+    if (!name || !cost || !code) return alert("Enter all fields");
+    fetch(`${WEB_APP_URL}?action=createPackage&name=${encodeURIComponent(name)}&cost=${encodeURIComponent(cost)}&code=${encodeURIComponent(code)}`)
+    .then(r => r.json())
+    .then(res => alert(res.message || "Package created"));
 }
 
 function createDiscount() {
-    fetch(`${WEB_APP_URL}?action=createDiscount&value=${encodeURIComponent(document.getElementById("discountValue").value)}`)
-    .then(r=>r.json()).then(d=>alert(d.message));
+    const val = document.getElementById("discountVal").value.trim();
+    if (!val) return alert("Enter discount value");
+    fetch(`${WEB_APP_URL}?action=createDiscount&value=${encodeURIComponent(val)}`)
+    .then(r => r.json())
+    .then(res => alert(res.message || "Discount created"));
+}
+
+function logout() {
+    sessionStorage.removeItem("isAdmin");
+    location.href = "admin_login.html";
 }
 </script>
 </body>

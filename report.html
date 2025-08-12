@@ -4,27 +4,69 @@
 <meta charset="UTF-8">
 <title>Reports - Dr. Labs</title>
 <style>
-    body { font-family: Arial; background: linear-gradient(to bottom right, lightblue, lightgreen); padding: 20px; }
-    table { border-collapse: collapse; width: 100%; background: white; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background: #007BFF; color: white; }
-    input, select, button { margin: 5px; padding: 5px; }
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(to bottom right, lightblue, lightgreen);
+        padding: 20px;
+    }
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    .filter-section {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+        justify-content: center;
+    }
+    input, select, button {
+        padding: 6px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+    }
+    th, td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: center;
+    }
+    th {
+        background: #007BFF;
+        color: white;
+    }
+    .status-confirmed { background: lightgreen; }
+    .status-cancelled { background: lightcoral; }
+    .status-report { background: lightblue; }
 </style>
 </head>
 <body>
+
 <h1>Reports</h1>
-<div>
-    <label>From: <input type="date" id="fromDate"></label>
-    <label>To: <input type="date" id="toDate"></label>
-    <input placeholder="City" id="city">
-    <input placeholder="Technician" id="tech">
-    <input placeholder="Agent" id="agent">
-    <input placeholder="Status" id="status">
-    <input placeholder="Phone" id="phone">
-    <button onclick="getReports()">Filter</button>
+
+<div class="filter-section">
+    <input type="date" id="fromDate">
+    <input type="date" id="toDate">
+    <select id="cityFilter"><option value="">City</option></select>
+    <select id="techFilter"><option value="">Technician</option></select>
+    <select id="agentFilter"><option value="">Agent</option></select>
+    <select id="statusFilter">
+        <option value="">Status</option>
+        <option value="Confirmed">Confirmed</option>
+        <option value="Cancelled">Cancelled</option>
+        <option value="Report Generated">Report Generated</option>
+    </select>
+    <input type="text" id="phoneFilter" placeholder="Phone">
+    <button onclick="loadReport()">Filter</button>
     <button onclick="downloadCSV()">Download CSV</button>
 </div>
-<table id="reportTable">
+
+<table>
     <thead>
         <tr>
             <th>Customer Number</th>
@@ -32,59 +74,94 @@
             <th>Location</th>
             <th>Preferred Date</th>
             <th>Preferred Time</th>
-            <th>Agent Name</th>
+            <th>Agent</th>
             <th>Technician</th>
             <th>Status</th>
             <th>Total Cost</th>
         </tr>
     </thead>
-    <tbody></tbody>
+    <tbody id="reportTable"></tbody>
 </table>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzCR-SayJVb0CUqY6UvGZlHdF0ZvfBejMR2qDndRI8dEVP1Lofq3BYnBkWpMl35pVyudg/exec"; // Replace with your Web App URL
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxBJHuzAe1EN6npzN-1W6Uc-azhf8-qkm3D6swOqeY3tiNgvXe9wBnA9eI4mPYntS26kw/exec";
 
-function getReports() {
-    const params = new URLSearchParams({
-        action: "getReports",
-        from: document.getElementById("fromDate").value,
-        to: document.getElementById("toDate").value,
-        city: document.getElementById("city").value,
-        tech: document.getElementById("tech").value,
-        agent: document.getElementById("agent").value,
-        status: document.getElementById("status").value,
-        phone: document.getElementById("phone").value
-    });
-    fetch(`${WEB_APP_URL}?${params}`)
-    .then(r=>r.json())
-    .then(data=>{
-        const tbody = document.querySelector("#reportTable tbody");
-        tbody.innerHTML = "";
-        data.forEach(row=>{
-            const tr = document.createElement("tr");
-            tr.innerHTML = `<td>${row.customerNumber}</td><td>${row.customerName}</td><td>${row.location}</td><td>${row.prefDate}</td><td>${row.prefTime}</td><td>${row.agentName}</td><td>${row.technician}</td><td>${row.status}</td><td>${row.totalCost}</td>`;
-            tbody.appendChild(tr);
+document.addEventListener("DOMContentLoaded", () => {
+    loadDropdown("cityFilter", "getCities");
+    loadDropdown("techFilter", "getTechnicians");
+    loadDropdown("agentFilter", "getAgents");
+});
+
+function loadDropdown(id, action) {
+    fetch(`${WEB_APP_URL}?action=${action}`)
+        .then(r => r.json())
+        .then(data => {
+            const sel = document.getElementById(id);
+            data.forEach(item => {
+                const opt = document.createElement("option");
+                opt.value = item.name || item;
+                opt.textContent = item.name || item;
+                sel.appendChild(opt);
+            });
         });
+}
+
+function loadReport() {
+    const params = new URLSearchParams({
+        action: "getReport",
+        fromDate: document.getElementById("fromDate").value,
+        toDate: document.getElementById("toDate").value,
+        city: document.getElementById("cityFilter").value,
+        technician: document.getElementById("techFilter").value,
+        agent: document.getElementById("agentFilter").value,
+        status: document.getElementById("statusFilter").value,
+        phone: document.getElementById("phoneFilter").value
     });
+
+    fetch(`${WEB_APP_URL}?${params}`)
+        .then(r => r.json())
+        .then(data => {
+            const tbody = document.getElementById("reportTable");
+            tbody.innerHTML = "";
+            if (!data.length) {
+                tbody.innerHTML = `<tr><td colspan="9">No results</td></tr>`;
+                return;
+            }
+            data.forEach(row => {
+                const tr = document.createElement("tr");
+                tr.className = row.status === "Cancelled" ? "status-cancelled" :
+                               row.status === "Report Generated" ? "status-report" :
+                               "status-confirmed";
+                tr.innerHTML = `
+                    <td>${row.customerNumber}</td>
+                    <td>${row.customerName}</td>
+                    <td>${row.location}</td>
+                    <td>${row.prefDate}</td>
+                    <td>${row.prefTime}</td>
+                    <td>${row.agentName}</td>
+                    <td>${row.technician}</td>
+                    <td>${row.status}</td>
+                    <td>${row.totalCost}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
 }
 
 function downloadCSV() {
     let csv = [];
     const rows = document.querySelectorAll("table tr");
-    rows.forEach(row=>{
-        const cols = row.querySelectorAll("th, td");
-        const rowData = [];
-        cols.forEach(col=>rowData.push(col.innerText));
-        csv.push(rowData.join(","));
+    rows.forEach(row => {
+        const cols = row.querySelectorAll("td, th");
+        const vals = Array.from(cols).map(col => `"${col.innerText}"`);
+        csv.push(vals.join(","));
     });
     const blob = new Blob([csv.join("\n")], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.setAttribute("href", url);
-    a.setAttribute("download", "report.csv");
-    document.body.appendChild(a);
+    a.href = url;
+    a.download = "report.csv";
     a.click();
-    document.body.removeChild(a);
 }
 </script>
 </body>

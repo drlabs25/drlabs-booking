@@ -1,385 +1,338 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<title>Booking - Dr. Labs Booking Portal</title>
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="UTF-8">
+<title>Booking - Dr. Labs</title>
 <style>
-  :root{
-    --primary:#007BFF; --muted:#6c757d;
-    --green:#d4edda; --green-border:#28a745;
-    --red:#f8d7da; --red-border:#dc3545;
-    --blue:#cce5ff;
-    --card:#ffffff;
-  }
-  *{box-sizing:border-box}
-  body{font-family:Arial,Helvetica,sans-serif;margin:0;background:linear-gradient(135deg,#cfe9ff,#dff7e6);color:#222}
-  .wrap{max-width:1150px;margin:16px auto;padding:12px}
-  header{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;background:rgba(255,255,255,0.95);box-shadow:0 6px 18px rgba(0,0,0,0.06)}
-  .brand{display:flex;align-items:center;gap:12px}
-  .brand img{height:48px}
-  .title{font-weight:800;font-size:18px}
-  .agent-info{text-align:right;min-width:220px}
-  .agent-info .user{font-weight:700}
-  .agent-info .logout{margin-top:8px;padding:6px 8px;border-radius:6px;border:0;background:#dc3545;color:#fff;cursor:pointer}
-
-  .layout{display:grid;grid-template-columns:1fr 380px;gap:16px;margin-top:12px}
-  @media(max-width:980px){ .layout{grid-template-columns:1fr} .aside{order:-1} }
-
-  .card{background:var(--card);padding:14px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,0.08)}
-  label{display:block;font-weight:700;margin-top:10px;font-size:13px}
-  input[type="text"], input[type="date"], input[type="number"], select, textarea{
-    width:100%;padding:8px;border-radius:8px;border:1px solid #dcdcdc;margin-top:6px;font-size:14px;
-  }
-  textarea{min-height:60px;resize:vertical}
-  .row{display:flex;gap:10px;align-items:center}
-  .col{flex:1}
-  .narrow{width:140px}
-  .btn{padding:9px 12px;border-radius:8px;border:0;background:var(--primary);color:#fff;font-weight:700;cursor:pointer}
-  .btn.ghost{background:transparent;color:var(--primary);border:1px solid var(--primary)}
-  .btn.warn{background:#dc3545}
-  .muted{color:var(--muted);font-size:13px}
-  .chip{display:inline-flex;align-items:center;padding:6px 8px;border-radius:16px;background:#f1f1f1;margin:4px;font-size:13px}
-  .chip .x{margin-left:8px;cursor:pointer;color:#900}
-
-  .status-card{padding:10px;border-radius:8px;margin-bottom:10px;color:#000}
-  .status-confirmed{background:var(--green);border-left:6px solid var(--green-border)}
-  .status-canceled{background:var(--red);border-left:6px solid var(--red-border)}
-  .status-report{background:var(--blue);border-left:6px solid var(--primary)}
-  .bookings-list{max-height:480px;overflow:auto;padding-top:6px}
-
-  .small{font-size:13px;color:var(--muted)}
-  hr.sep{border:none;border-top:1px solid #eee;margin:12px 0}
-  .notice{color:#a00;font-weight:700;margin-top:8px}
+    body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(to bottom right, lightblue, lightgreen);
+        margin: 0;
+        padding: 20px;
+    }
+    header {
+        display: flex;
+        justify-content: space-between;
+        background: rgba(255,255,255,0.9);
+        padding: 10px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+    .form-section {
+        background: white;
+        padding: 15px;
+        border-radius: 10px;
+        max-width: 900px;
+        margin: auto;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    label {
+        display: block;
+        margin: 8px 0 4px;
+        font-weight: bold;
+    }
+    input, select, textarea, button {
+        width: 100%;
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+    }
+    button {
+        background: #007BFF;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+    button:hover { background: #0056b3; }
+    .btn-small {
+        width: auto;
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+    table {
+        width: 100%;
+        margin-top: 15px;
+        border-collapse: collapse;
+    }
+    th, td {
+        border: 1px solid #ccc;
+        padding: 6px;
+        text-align: center;
+    }
+    .status-confirmed { background: lightgreen; }
+    .status-cancelled { background: lightcoral; }
+    .status-report { background: lightblue; }
 </style>
 </head>
 <body>
-  <div class="wrap">
-    <header>
-      <div class="brand">
-        <img src="dr_labs_logo.png" alt="Dr Labs" onerror="this.style.display='none'">
-        <div>
-          <div class="title">Dr. Labs Booking Portal</div>
-          <div class="small">Agent Booking</div>
-        </div>
-      </div>
-      <div class="agent-info card" style="padding:10px">
-        <div>Logged in: <span class="user" id="agentUser">—</span></div>
-        <div class="small" id="nowDisplay">—</div>
-        <button class="logout" id="btnLogout">Logout</button>
-      </div>
-    </header>
 
-    <div class="layout">
-      <!-- LEFT: Booking form -->
-      <section class="card">
-        <label>Customer Number (10 digits)</label>
-        <div class="row">
-          <input type="text" id="customerPhone" maxlength="10" placeholder="e.g. 9876543210" pattern="\d*">
-          <button class="btn" id="btnSearch">Search</button>
-        </div>
-        <div id="phoneMsg" class="muted" style="margin-top:8px"></div>
+<header>
+    <div>Agent: <span id="agentName"></span></div>
+    <div>Date/Time: <span id="dateTime"></span></div>
+    <button onclick="logout()" class="btn-small">Logout</button>
+</header>
 
-        <form id="bookingForm" style="display:none;margin-top:12px" onsubmit="event.preventDefault(); handleSubmit();">
-          <label>Tree Customer Name</label>
-          <input type="text" id="customerName" placeholder="Full name (alpha only)">
-
-          <div class="row">
-            <div class="col">
-              <label>Date of Birth</label>
-              <input type="date" id="dob">
-            </div>
-            <div class="narrow">
-              <label>Age</label>
-              <input type="number" id="age" min="0" placeholder="Age">
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col">
-              <label>Gender</label>
-              <select id="gender"><option value="">Select</option><option>Male</option><option>Female</option></select>
-            </div>
-            <div class="narrow">
-              <label>Pincode</label>
-              <input type="text" id="pincode" maxlength="6" placeholder="600001" pattern="\d*">
-            </div>
-          </div>
-
-          <label>Address</label>
-          <textarea id="address" maxlength="500" placeholder="Up to 500 characters"></textarea>
-
-          <div class="row">
-            <div class="col">
-              <label>Location</label>
-              <input id="location" maxlength="100" placeholder="Up to 100 characters">
-            </div>
-            <div class="narrow">
-              <label>City</label>
-              <select id="city">
-                <option value="">Select city</option>
-                <option>Chennai</option><option>Bangalore</option><option>Hyderabad</option><option>Mumbai</option><option>Delhi</option><option>Coimbatore</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col">
-              <label>Technician</label>
-              <select id="technician"><option value="">Loading...</option></select>
-            </div>
-            <div class="narrow">
-              <label>Preferred Date</label>
-              <input type="date" id="prefDate">
-            </div>
-          </div>
-
-          <label>Preferred Time</label>
-          <select id="prefTime"></select>
-
-          <hr class="sep">
-
-          <div class="row">
-            <div class="col">
-              <label>Search Tests</label>
-              <input type="text" id="searchTests" placeholder="Type to filter tests">
-              <div id="testsList" style="max-height:160px;overflow:auto;border:1px solid #f0f0f0;padding:6px;margin-top:8px"></div>
-            </div>
-            <div class="col">
-              <label>Search Packages</label>
-              <input type="text" id="searchPackages" placeholder="Type to filter packages">
-              <div id="packagesList" style="max-height:160px;overflow:auto;border:1px solid #f0f0f0;padding:6px;margin-top:8px"></div>
-            </div>
-          </div>
-
-          <div style="margin-top:10px">
-            <div><strong>Selected Tests</strong></div>
-            <div id="selectedTests" style="margin-top:6px"></div>
-
-            <div style="margin-top:10px"><strong>Selected Packages</strong></div>
-            <div id="selectedPackages" style="margin-top:6px"></div>
-          </div>
-
-          <div class="row" style="margin-top:12px">
-            <div class="narrow">
-              <label>Discount</label>
-              <select id="discount"><option value="0">-- No discount --</option></select>
-            </div>
-            <div class="narrow">
-              <label>Technician Charge</label>
-              <input type="number" id="techCharge" min="0" value="0">
-            </div>
-            <div class="col" style="display:flex;align-items:flex-end;gap:8px">
-              <button type="button" class="btn" id="btnCalc">Calculate</button>
-              <button type="button" class="btn ghost" id="btnBranch">Branch Booking</button>
-              <button type="button" class="btn ghost" id="btnReset">Reset</button>
-            </div>
-          </div>
-
-          <div style="margin-top:12px;padding:10px;background:#fbfbfb;border-radius:8px">
-            <div>Tests Total: <span id="testsTotal">₹ 0</span></div>
-            <div>Packages Total: <span id="packagesTotal">₹ 0</span></div>
-            <div>Discount Amount: <span id="discountAmount">₹ 0</span></div>
-            <div>Technician Charge: <span id="techChargeDisplay">₹ 0</span></div>
-            <div style="font-weight:800;margin-top:8px">Total Amount to be Paid: <span id="totalPayable">₹ 0</span></div>
-          </div>
-
-          <div style="display:flex;gap:8px;margin-top:12px">
-            <button type="submit" class="btn" id="btnSubmit">Submit</button>
-            <button type="button" class="btn ghost" id="btnConfirm" style="display:none">Confirm Booking</button>
-          </div>
-
-          <div id="formNotice" class="notice" style="display:none"></div>
-        </form>
-      </section>
-
-      <!-- RIGHT: summary / bookings -->
-      <aside class="card aside">
-        <h3>Booking Summary / History</h3>
-        <div id="singleBookingBox"></div>
-
-        <h4 style="margin-top:8px">All Bookings (recent)</h4>
-        <div class="bookings-list" id="bookingsList"></div>
-      </aside>
+<div class="form-section">
+    <label>Customer Number</label>
+    <div style="display:flex; gap:5px;">
+        <input type="text" id="custPhone" maxlength="10" placeholder="Enter 10 digit number">
+        <button onclick="searchBooking()">Create Booking</button>
     </div>
-  </div>
+
+    <div id="bookingForm" style="display:none; margin-top:20px;">
+        <label>Customer Name</label>
+        <input type="text" id="custName">
+
+        <label>Date of Birth</label>
+        <input type="date" id="dob" onchange="calculateAge()">
+
+        <label>Age</label>
+        <input type="number" id="age">
+
+        <label>Gender</label>
+        <select id="gender">
+            <option value="">Select</option>
+            <option>Male</option>
+            <option>Female</option>
+        </select>
+
+        <label>Address</label>
+        <textarea id="address" maxlength="500"></textarea>
+
+        <label>Location</label>
+        <input type="text" id="location" maxlength="100">
+
+        <label>City</label>
+        <select id="city">
+            <option>Chennai</option>
+            <option>Bangalore</option>
+            <option>Hyderabad</option>
+            <option>Mumbai</option>
+            <option>Delhi</option>
+            <option>Coimbatore</option>
+        </select>
+
+        <label>Technician</label>
+        <select id="technician"></select>
+
+        <label>Pincode</label>
+        <input type="text" id="pincode" maxlength="6">
+
+        <label>Preferred Date</label>
+        <input type="date" id="prefDate">
+
+        <label>Preferred Time</label>
+        <select id="prefTime"></select>
+
+        <label>Tests</label>
+        <select id="tests" multiple></select>
+
+        <label>Packages</label>
+        <select id="packages" multiple></select>
+
+        <label>Total Amount</label>
+        <input type="number" id="totalAmount" readonly>
+
+        <label>Discount</label>
+        <select id="discount"></select>
+
+        <label>Technician Charge</label>
+        <input type="number" id="techCharge">
+
+        <label>Total Amount to be Paid</label>
+        <input type="number" id="totalPayable" readonly>
+
+        <div style="margin-top:10px; display:flex; gap:5px;">
+            <button onclick="submitBooking()">Submit</button>
+            <button onclick="branchBooking()">Branch Booking</button>
+        </div>
+    </div>
+</div>
+
+<div class="form-section" id="bookingList" style="display:none;">
+    <table>
+        <thead>
+            <tr>
+                <th>Customer Number</th>
+                <th>Name</th>
+                <th>City</th>
+                <th>Technician</th>
+                <th>Preferred Date</th>
+                <th>Preferred Time</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="bookingsTable"></tbody>
+    </table>
+</div>
 
 <script>
-/* ================= CONFIG ================= */
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzCR-SayJVb0CUqY6UvGZlHdF0ZvfBejMR2qDndRI8dEVP1Lofq3BYnBkWpMl35pVyudg/exec'; // <-- REPLACE with your Apps Script Web App URL
-/* ========================================== */
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxBJHuzAe1EN6npzN-1W6Uc-azhf8-qkm3D6swOqeY3tiNgvXe9wBnA9eI4mPYntS26kw/exec";
 
-/* ========== STATE ========== */
-let TECHNICIANS = [], TESTS = [], PACKAGES = [], DISCOUNTS = [];
-let bookingsCache = [], selectedTests = [], selectedPackages = [];
-let currentEditBookingId = null, branchMode = false, lockedBranchFields = {};
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("agentName").innerText = localStorage.getItem("agentName") || "";
+    updateDateTime();
+    setInterval(updateDateTime, 1000);
+    loadDropdowns();
+    setDateLimits();
+});
 
-/* ========== HELPERS ========== */
-const $ = id => document.getElementById(id);
-function nowText(){ return new Date().toLocaleString(); }
-function escapeStr(s){ return btoa(unescape(encodeURIComponent(s||''))); }
-function unescapeStr(s){ try{ return decodeURIComponent(escape(atob(s||''))); }catch(e){ return s; } }
-
-/* ========== INIT ========== */
-function init(){
-  $('agentUser').textContent = localStorage.getItem('agentName') || '--';
-  updateNow(); setInterval(updateNow,1000);
-  const today = new Date(); today.setHours(0,0,0,0); $('prefDate').setAttribute('min', today.toISOString().split('T')[0]);
-  populateTimeSlots();
-  attachEvents();
-  fetchLists();
-}
-function updateNow(){ $('nowDisplay').textContent = nowText(); }
-
-function attachEvents(){
-  $('btnSearch').addEventListener('click', onPhoneSearch);
-  $('btnCalc').addEventListener('click', calculateTotals);
-  $('btnReset').addEventListener('click', resetAll);
-  $('btnBranch').addEventListener('click', enableBranchMode);
-  $('btnSubmit').addEventListener('click', onSubmitBooking);
-  $('btnConfirm').addEventListener('click', onSubmitBooking);
-  $('logoutBtn').addEventListener('click', ()=>{ localStorage.removeItem('agentName'); location.href='index.html'; });
-  $('searchTests').addEventListener('input', renderTestsList);
-  $('searchPackages').addEventListener('input', renderPackagesList);
-  $('dob').addEventListener('change', ()=> { if($('dob').value) $('age').value = calcAge(new Date($('dob').value)); });
+function updateDateTime(){
+    document.getElementById("dateTime").innerText = new Date().toLocaleString();
 }
 
-/* ========== FETCH LISTS ========== */
-async function fetchLists(){
-  try{
-    const r = await fetch(`${WEB_APP_URL}?action=getDropdownData`);
-    const j = await r.json();
-    if(j.success){
-      TECHNICIANS = j.technicians || []; TESTS = j.tests || []; PACKAGES = j.packages || []; DISCOUNTS = j.discounts || [];
-    } else { TECHNICIANS=[]; TESTS=[]; PACKAGES=[]; DISCOUNTS=[]; }
-  } catch(e){ console.error('fetchLists', e); TECHNICIANS=[]; TESTS=[]; PACKAGES=[]; DISCOUNTS=[]; }
-  populateSelects();
-  renderTestsList(); renderPackagesList();
+function logout(){
+    localStorage.clear();
+    window.location.href = "agent_login.html";
 }
 
-/* populate tech & discounts */
-function populateSelects(){
-  const tech = $('technician'); tech.innerHTML = '<option value="">-- Select Technician --</option>';
-  (TECHNICIANS||[]).forEach(t=>{ const o = document.createElement('option'); o.value = (typeof t==='string'?t:(t.name||t[0]||'')); o.textContent = o.value; tech.appendChild(o); });
-  const disc = $('discount'); disc.innerHTML = '<option value="0">-- No discount --</option>';
-  (DISCOUNTS||[]).forEach(d=>{ const v = String(d); const o = document.createElement('option'); o.value = v; o.textContent = v.includes('%')?v:(v+'%'); disc.appendChild(o); });
+function setDateLimits(){
+    const today = new Date().toISOString().split("T")[0];
+    document.getElementById("prefDate").setAttribute("min", today);
 }
 
-/* ========== Tests / Packages UI ========== */
-function renderTestsList(){
-  const q = ($('searchTests').value||'').toLowerCase().trim();
-  const c = $('testsList'); c.innerHTML = '';
-  if(!TESTS || TESTS.length===0){ c.innerHTML = '<div class="muted">No tests available</div>'; return; }
-  TESTS.filter(t => ((t.name||t[0]||'').toString().toLowerCase().includes(q) || ((t.code||t[2]||'')+'').toLowerCase().includes(q)))
-    .forEach(t=>{
-      const name = t.name||t[0]||''; const code = t.code||t[2]||''; const cost = (t.cost!==undefined)?t.cost:(t[1]||0);
-      const div = document.createElement('div'); div.style.display='flex'; div.style.justifyContent='space-between'; div.style.padding='6px 4px'; div.style.borderBottom='1px solid #f4f4f4';
-      div.innerHTML = `<div><strong>${name}</strong><div class="small">${code||''}</div></div>
-        <div style="text-align:right"><div class="small">₹ ${cost}</div><button class="btn ghost" type="button" onclick='toggleTest("${escapeStr(code||name)}")'>Add</button></div>`;
-      c.appendChild(div);
-    });
-}
-function renderPackagesList(){
-  const q = ($('searchPackages').value||'').toLowerCase().trim();
-  const c = $('packagesList'); c.innerHTML = '';
-  if(!PACKAGES || PACKAGES.length===0){ c.innerHTML = '<div class="muted">No packages available</div>'; return; }
-  PACKAGES.filter(p => ((p.name||p[0]||'').toString().toLowerCase().includes(q) || ((p.code||p[2]||'')+'').toLowerCase().includes(q)))
-    .forEach(p=>{
-      const name = p.name||p[0]||''; const code = p.code||p[2]||''; const cost = (p.cost!==undefined)?p.cost:(p[1]||0);
-      const div = document.createElement('div'); div.style.display='flex'; div.style.justifyContent='space-between'; div.style.padding='6px 4px'; div.style.borderBottom='1px solid #f4f4f4';
-      div.innerHTML = `<div><strong>${name}</strong><div class="small">${code||''}</div></div>
-        <div style="text-align:right"><div class="small">₹ ${cost}</div><button class="btn ghost" type="button" onclick='togglePackage("${escapeStr(code||name)}")'>Add</button></div>`;
-      c.appendChild(div);
-    });
-}
-
-/* selection toggles */
-function toggleTest(enc){ const key=unescapeStr(enc); const t=TESTS.find(x=> (x.code===key)||(x.name===key)||(x[2]===key)||(x[0]===key)); if(!t) return; const id=t.code||t.name||t[2]||t[0]; const idx=selectedTests.findIndex(x => (x.code||x.name||x[2]||x[0])===id); if(idx>=0) selectedTests.splice(idx,1); else selectedTests.push(t); renderSelectedLists(); }
-function togglePackage(enc){ const key=unescapeStr(enc); const p=PACKAGES.find(x=> (x.code===key)||(x.name===key)||(x[2]===key)||(x[0]===key)); if(!p) return; const id=p.code||p.name||p[2]||p[0]; const idx=selectedPackages.findIndex(x => (x.code||x.name||x[2]||x[0])===id); if(idx>=0) selectedPackages.splice(idx,1); else selectedPackages.push(p); renderSelectedLists(); }
-function renderSelectedLists(){ const ts=$('selectedTests'); ts.innerHTML=''; selectedTests.forEach(t=>{ const name=t.name||t[0]||''; const cost=(t.cost!==undefined)?t.cost:(t[1]||0); const span=document.createElement('span'); span.className='chip'; span.innerHTML=`${name} (₹${cost}) <span class="x" onclick="removeTest('${escapeStr(t.code||t.name||t[2]||t[0])}')">✕</span>`; ts.appendChild(span); }); const ps=$('selectedPackages'); ps.innerHTML=''; selectedPackages.forEach(p=>{ const name=p.name||p[0]||''; const cost=(p.cost!==undefined)?p.cost:(p[1]||0); const span=document.createElement('span'); span.className='chip'; span.innerHTML=`${name} (₹${cost}) <span class="x" onclick="removePackage('${escapeStr(p.code||p.name||p[2]||p[0])}')">✕</span>`; ps.appendChild(span); }); calculateTotals(); }
-function removeTest(enc){ const key=unescapeStr(enc); selectedTests=selectedTests.filter(t => (t.code||t.name||t[2]||t[0]) !== key); renderSelectedLists(); }
-function removePackage(enc){ const key=unescapeStr(enc); selectedPackages=selectedPackages.filter(p => (p.code||p.name||p[2]||p[0]) !== key); renderSelectedLists(); }
-
-/* totals */
-function calculateTotals(){ const testsTotal = selectedTests.reduce((s,t)=> s + Number((t.cost!==undefined)?t.cost:(t[1]||0)),0); const packagesTotal = selectedPackages.reduce((s,p)=> s + Number((p.cost!==undefined)?p.cost:(p[1]||0)),0); const totalAmount = testsTotal + packagesTotal; const discRaw = $('discount').value || '0'; const discPercent = parseFloat(String(discRaw).replace('%','')) || 0; const discountBase = Math.max(0, totalAmount - packagesTotal); const discountAmount = Math.round((discountBase * discPercent)/100); const techCharge = Number($('techCharge').value || 0); const payable = Math.round(totalAmount - discountAmount + techCharge); $('testsTotal').textContent = `₹ ${testsTotal}`; $('packagesTotal').textContent = `₹ ${packagesTotal}`; $('discountAmount').textContent = `₹ ${discountAmount}`; $('techChargeDisplay').textContent = `₹ ${techCharge}`; $('totalPayable').textContent = `₹ ${payable}`; return {testsTotal, packagesTotal, totalAmount, discountAmount, techCharge, payable}; }
-
-/* time slots */
-function populateTimeSlots(){ const sel=$('prefTime'); sel.innerHTML=''; for(let h=6; h<18; h++){ for(let m of [0,30]){ const from=formatTime(h,m); let toH=h,toM=m+30; if(toM>=60){ toH++; toM-=60; } const to=formatTime(toH,toM); const label = `${from} - ${to}`; const opt=document.createElement('option'); opt.value = label; opt.textContent = label; sel.appendChild(opt); }} }
-function formatTime(h,m){ const d=new Date(); d.setHours(h); d.setMinutes(m); d.setSeconds(0); return d.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}); }
-
-/* phone search */
-async function onPhoneSearch(){ const phone=$('customerPhone').value.trim(); if(!/^\d{10}$/.test(phone)){ alert('Enter valid 10-digit phone'); return; } resetFormFields(); $('bookingForm').style.display='none'; $('singleBookingBox').innerHTML=''; $('bookingsList').innerHTML=''; $('phoneMsg').textContent='Loading...'; try{ const resp = await fetch(`${WEB_APP_URL}?action=getBookingsByPhone&phone=${encodeURIComponent(phone)}`); const j = await resp.json(); if(!j.success){ $('phoneMsg').textContent='No bookings or server error'; $('bookingForm').style.display='block'; return; } const arr = j.bookings || []; bookingsCache = arr; if(arr.length === 0){ $('phoneMsg').textContent='No previous bookings. Create new booking.'; $('bookingForm').style.display='block'; return; } $('phoneMsg').textContent = `${arr.length} bookings found.`; renderSingleBooking(arr[arr.length-1]); renderBookingsList(arr); $('bookingForm').style.display='block'; } catch(e){ console.error(e); alert('Failed to fetch bookings'); $('bookingForm').style.display='block'; } }
-
-/* render single and list */
-function renderSingleBooking(b){ const box = $('singleBookingBox'); box.innerHTML=''; const status = b.status || b.Status || 'Confirmed'; const cls = status==='Canceled' ? 'status-canceled' : (status==='Report Generated' ? 'status-report' : 'status-confirmed'); const div=document.createElement('div'); div.className=`status-card ${cls}`; div.innerHTML = `<div><strong>${b.name||b.Name||'(No name)'}</strong> — ${b.phone||b.Phone}</div><div class="small">City: ${b.city||b.City||'-'}</div><div class="small">Technician: ${b.technician||b.Technician||'-'}</div><div class="small">${b.prefDate||b.PrefDate||'-'} | ${b.prefTime||b.PrefTime||'-'}</div><div style="margin-top:8px">Status: <strong>${status}</strong></div><div style="margin-top:8px"><button class="btn ghost" onclick="startModify('${escapeStr(b.bookingId||b.BookingID||b.ID||'')}')">📝 Modify</button><button class="btn" style="background:#007bff" onclick="markReport('${escapeStr(b.bookingId||b.BookingID||b.ID||'')}')">📄 Report Generated</button><button class="btn warn" onclick="cancelBooking('${escapeStr(b.bookingId||b.BookingID||b.ID||'')}')">❌ Cancel</button></div>`; box.appendChild(div); }
-function renderBookingsList(list){ const cont = $('bookingsList'); cont.innerHTML=''; list.slice().reverse().forEach(b=>{ const status = b.status || b.Status || 'Confirmed'; const cls = status==='Canceled' ? 'status-canceled' : (status==='Report Generated' ? 'status-report' : 'status-confirmed'); const el = document.createElement('div'); el.style.marginBottom='8px'; el.innerHTML = `<div class="status-card ${cls}"><div><strong>${b.name||b.Name||'(No name)'}</strong> — ${b.phone||b.Phone}</div><div class="small">${b.prefDate||b.PrefDate||''} | ${b.prefTime||b.PrefTime||''}</div><div class="small">Technician: ${b.technician||b.Technician||''}</div><div style="margin-top:8px"><button class="btn ghost" onclick="startModify('${escapeStr(b.bookingId||b.BookingID||b.ID||'')}')">📝 Modify</button><button class="btn" style="background:#007bff" onclick="markReport('${escapeStr(b.bookingId||b.BookingID||b.ID||'')}')">📄 Report Generated</button><button class="btn warn" onclick="cancelBooking('${escapeStr(b.bookingId||b.BookingID||b.ID||'')}')">❌ Cancel</button></div></div>`; cont.appendChild(el); }); }
-
-/* actions */
-async function markReport(enc){ const bookingId=unescapeStr(enc); if(!bookingId) return alert('Missing id'); try{ const r=await fetch(`${WEB_APP_URL}?action=updateStatus&bookingId=${encodeURIComponent(bookingId)}&status=${encodeURIComponent('Report Generated')}`); const j=await r.json(); if(j.success){ alert('Marked Report Generated'); onPhoneSearch(); } else alert('Failed: '+(j.error||'')); } catch(e){ console.error(e); alert('Failed'); } }
-async function cancelBooking(enc){ const bookingId=unescapeStr(enc); if(!bookingId) return alert('Missing id'); if(!confirm('Cancel booking?')) return; try{ const r=await fetch(`${WEB_APP_URL}?action=updateStatus&bookingId=${encodeURIComponent(bookingId)}&status=${encodeURIComponent('Canceled')}`); const j=await r.json(); if(j.success){ alert('Cancelled'); onPhoneSearch(); } else alert('Failed: '+(j.error||'')); } catch(e){ console.error(e); alert('Failed'); } }
-
-async function startModify(enc){ const bookingId=unescapeStr(enc); if(!bookingId) return alert('Missing id'); try{ const r=await fetch(`${WEB_APP_URL}?action=getReports`); const j=await r.json(); if(!j.success) return alert('Failed to fetch bookings'); const found=(j.reports||[]).find(x => (x.bookingId||x.BookingID||x.bookingid||x.BookingId) == bookingId); if(!found) return alert('Booking not found'); currentEditBookingId=bookingId; $('customerPhone').value=found.phone||found.Phone||''; $('customerName').value=found.name||found.Name||''; $('dob').value=found.dob||''; $('age').value=found.age||''; $('gender').value=found.gender||''; $('address').value=found.address||found.location||''; $('location').value=found.location||''; setSelectValue('city', found.city||''); setSelectValue('technician', found.technician||''); $('pincode').value=found.pincode||''; $('prefDate').value=found.prefDate||''; populateTimeSlots(); setSelectValue('prefTime', found.prefTime||''); try{ selectedTests = JSON.parse(found.tests || found.TestsJSON || '[]'); } catch(e){ selectedTests = []; } try{ selectedPackages = JSON.parse(found.packages || found.PackagesJSON || '[]'); } catch(e){ selectedPackages = []; } renderSelectedLists(); $('techCharge').value = found.technicianCharge || found.TechnicianCharge || 0; calculateTotals(); $('bookingForm').style.display='block'; $('btnConfirm').style.display='inline-block'; window.scrollTo({top:0,behavior:'smooth'}); } catch(e){ console.error(e); alert('Failed to load'); } }
-function setSelectValue(id,val){ const sel=$(id); if(!sel) return; const opt = Array.from(sel.options).find(o=> o.value===val || o.text===val); if(opt) sel.value = opt.value; else { const o=document.createElement('option'); o.value = val||''; o.text = val||''; sel.appendChild(o); sel.value = o.value; } }
-
-/* submit */
-async function onSubmitBooking(){ await handleSubmit(); }
-async function handleSubmit(){
-  try{
-    const phone = $('customerPhone').value.trim(); if(!/^\d{10}$/.test(phone)) return alert('Enter valid 10-digit phone');
-    const name = $('customerName').value.trim(); if(!/^[a-zA-Z\s]+$/.test(name)) return alert('Name alphabetic required');
-    const dob = $('dob').value; let age = $('age').value; if(!dob && (!age || Number(age)<=0)) return alert('Provide DOB or Age'); if(dob && (!age||Number(age)<=0)) age = calcAge(new Date(dob)); const gender = $('gender').value; if(!gender) return alert('Select gender');
-    const address = $('address').value.trim(); if(!address||address.length>500) return alert('Address required (max 500)'); const location = $('location').value.trim(); if(!location||location.length>100) return alert('Location required (max 100)');
-    const city = $('city').value; if(!city) return alert('Select city'); const technician = $('technician').value; if(!technician) return alert('Select technician');
-    const pincode = $('pincode').value.trim(); if(!/^\d{6}$/.test(pincode)) return alert('Pincode 6 digits'); const prefDate = $('prefDate').value; if(!prefDate) return alert('Preferred date required'); const today = new Date(); today.setHours(0,0,0,0); if(new Date(prefDate) < today) return alert('Preferred date must be today or future'); const prefTime = $('prefTime').value; if(!prefTime) return alert('Preferred time required'); if(selectedTests.length===0 && selectedPackages.length===0) return alert('Select at least one test or package');
-
-    // availability: query server reports for that tech & date
-    const checkResp = await fetch(`${WEB_APP_URL}?action=getReports&technician=${encodeURIComponent(technician)}&startDate=${encodeURIComponent(prefDate)}&endDate=${encodeURIComponent(prefDate)}`);
-    const checkJson = await checkResp.json();
-    if(checkJson.success && Array.isArray(checkJson.reports)){
-      const conflict = checkJson.reports.find(r => (r.prefTime||r.PrefTime||'') === prefTime && ((r.status||r.Status||'').toLowerCase() !== 'canceled') && (currentEditBookingId ? (r.bookingId !== currentEditBookingId) : true));
-      if(conflict) return alert('Preferred time not available for this technician. Choose another slot.');
+function calculateAge(){
+    const dob = document.getElementById("dob").value;
+    if(dob){
+        const diff = Date.now() - new Date(dob).getTime();
+        const age = new Date(diff).getUTCFullYear() - 1970;
+        document.getElementById("age").value = age;
     }
-
-    const calc = calculateTotals();
-    const payload = {
-      action: 'createOrUpdateBooking',
-      bookingId: currentEditBookingId || '',
-      phone: phone, name: name, dob: dob||'', age: age, gender: gender, address: address, location: location, city: city, technician: technician, pincode: pincode,
-      prefDate: prefDate, prefTime: prefTime, tests: JSON.stringify(selectedTests), packages: JSON.stringify(selectedPackages), totalAmount: calc.totalAmount || 0,
-      discount: $('discount').value || '0', techCharge: calc.techCharge || 0, finalAmount: calc.payable || 0, agentName: localStorage.getItem('agentName') || ''
-    };
-
-    // build query string
-    const q = new URLSearchParams(payload).toString();
-    const resp = await fetch(`${WEB_APP_URL}?${q}`);
-    const j = await resp.json();
-    if(!j.success) return alert('Failed to save booking: ' + (j.error || j.message || 'unknown'));
-    alert(j.updated ? 'Booking updated' : 'Booking created');
-    currentEditBookingId = null;
-    if(branchMode){ clearCustomerSpecificFields(); } else { resetAll(); }
-    onPhoneSearch();
-  } catch(e){ console.error('handleSubmit', e); alert('Error saving booking'); }
 }
 
-/* branch booking */
-function enableBranchMode(){
-  if(!$('address').value || !$('location').value || !$('city').value || !$('technician').value || !$('pincode').value || !$('prefDate').value || !$('prefTime').value) return alert('Fill address, location, city, technician, pincode, preferred date & time before enabling Branch Booking.');
-  branchMode = true;
-  lockedBranchFields = { address: $('address').value, location: $('location').value, city: $('city').value, technician: $('technician').value, pincode: $('pincode').value, prefDate: $('prefDate').value, prefTime: $('prefTime').value };
-  ['address','location','city','technician','pincode','prefDate','prefTime'].forEach(id => $(id).setAttribute('disabled','true'));
-  alert('Branch Booking enabled — some fields locked.');
+function loadDropdowns(){
+    fetch(WEB_APP_URL + "?action=getTechnicians")
+        .then(r=>r.json()).then(data=>{
+            let techSel = document.getElementById("technician");
+            data.forEach(t=>{
+                let opt = document.createElement("option");
+                opt.value = t.name;
+                opt.textContent = t.name;
+                techSel.appendChild(opt);
+            });
+        });
+    fetch(WEB_APP_URL + "?action=getTests")
+        .then(r=>r.json()).then(data=>{
+            let testSel = document.getElementById("tests");
+            data.forEach(t=>{
+                let opt = document.createElement("option");
+                opt.value = t.name;
+                opt.textContent = t.name + " ("+t.cost+")";
+                testSel.appendChild(opt);
+            });
+        });
+    fetch(WEB_APP_URL + "?action=getPackages")
+        .then(r=>r.json()).then(data=>{
+            let pkgSel = document.getElementById("packages");
+            data.forEach(p=>{
+                let opt = document.createElement("option");
+                opt.value = p.name;
+                opt.textContent = p.name + " ("+p.cost+")";
+                pkgSel.appendChild(opt);
+            });
+        });
+    fetch(WEB_APP_URL + "?action=getDiscounts")
+        .then(r=>r.json()).then(data=>{
+            let disSel = document.getElementById("discount");
+            data.forEach(d=>{
+                let opt = document.createElement("option");
+                opt.value = d.value;
+                opt.textContent = d.value + "%";
+                disSel.appendChild(opt);
+            });
+        });
 }
-function clearCustomerSpecificFields(){ $('customerName').value=''; $('dob').value=''; $('age').value=''; $('gender').value=''; selectedTests=[]; selectedPackages=[]; renderSelectedLists(); $('techCharge').value='0'; $('discount').value='0'; calculateTotals(); }
 
-/* reset helpers */
-function resetFormFields(){ $('customerName').value=''; $('dob').value=''; $('age').value=''; $('gender').value=''; $('address').value=''; $('location').value=''; $('city').value=''; $('technician').value=''; $('pincode').value=''; $('prefDate').value=''; $('prefTime').value=''; selectedTests=[]; selectedPackages=[]; $('techCharge').value='0'; $('discount').value='0'; renderSelectedLists(); calculateTotals(); currentEditBookingId=null; $('btnConfirm').style.display='none'; }
-function resetAll(){ resetFormFields(); $('bookingForm').style.display='none'; $('phoneMsg').textContent=''; $('customerPhone').value=''; $('singleBookingBox').innerHTML=''; $('bookingsList').innerHTML=''; branchMode=false; lockedBranchFields={}; ['address','location','city','technician','pincode','prefDate','prefTime'].forEach(id=>$(id).removeAttribute('disabled')); }
+function searchBooking(){
+    const phone = document.getElementById("custPhone").value;
+    if(phone.length !== 10){
+        alert("Enter valid 10 digit number");
+        return;
+    }
+    clearForm();
+    fetch(WEB_APP_URL + "?action=getBookingsByPhone&phone="+phone)
+        .then(r=>r.json()).then(data=>{
+            document.getElementById("bookingForm").style.display = "block";
+            if(data.length){
+                document.getElementById("bookingList").style.display = "block";
+                renderBookings(data);
+            } else {
+                document.getElementById("bookingList").style.display = "none";
+            }
+        });
+}
 
-/* calc age */
-function calcAge(dob){ const today=new Date(); let age=today.getFullYear()-dob.getFullYear(); const m=today.getMonth()-dob.getMonth(); if(m<0 || (m===0 && today.getDate()<dob.getDate())) age--; return age>=0?age:0; }
+function clearForm(){
+    document.querySelectorAll("#bookingForm input, #bookingForm select, #bookingForm textarea").forEach(el=>{
+        if(el.type!=="button") el.value = "";
+    });
+}
 
-/* START */
-init();
+function renderBookings(data){
+    let tbody = document.getElementById("bookingsTable");
+    tbody.innerHTML = "";
+    data.forEach(b=>{
+        let tr = document.createElement("tr");
+        tr.className = b.status==="Cancelled" ? "status-cancelled" :
+                       b.status==="Report Generated" ? "status-report" : "status-confirmed";
+        tr.innerHTML = `
+            <td>${b.customerNumber}</td>
+            <td>${b.customerName}</td>
+            <td>${b.city}</td>
+            <td>${b.technician}</td>
+            <td>${b.prefDate}</td>
+            <td>${b.prefTime}</td>
+            <td>${b.status}</td>
+            <td>
+                <button class="btn-small" onclick="modifyBooking('${b.customerNumber}')">Modify</button>
+                <button class="btn-small" onclick="cancelBooking('${b.customerNumber}')">Cancel</button>
+                <button class="btn-small" onclick="markReport('${b.customerNumber}')">Report Generated</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function submitBooking(){
+    const params = new URLSearchParams({
+        action: "createBooking",
+        customerNumber: document.getElementById("custPhone").value,
+        customerName: document.getElementById("custName").value,
+        city: document.getElementById("city").value,
+        location: document.getElementById("location").value,
+        prefDate: document.getElementById("prefDate").value,
+        prefTime: document.getElementById("prefTime").value,
+        agentName: localStorage.getItem("agentName"),
+        technician: document.getElementById("technician").value,
+        totalCost: document.getElementById("totalAmount").value
+    });
+    fetch(WEB_APP_URL+"?"+params)
+        .then(r=>r.json()).then(d=>alert(d.message));
+}
+
+function branchBooking(){
+    document.getElementById("custName").value="";
+    document.getElementById("dob").value="";
+    document.getElementById("age").value="";
+    document.getElementById("gender").value="";
+}
+
+function modifyBooking(phone){
+    alert("Modify booking for "+phone);
+}
+
+function cancelBooking(phone){
+    fetch(WEB_APP_URL+"?action=cancelBooking&phone="+phone)
+        .then(r=>r.json()).then(d=>alert(d.message));
+}
+
+function markReport(phone){
+    fetch(WEB_APP_URL+"?action=markReportGenerated&phone="+phone)
+        .then(r=>r.json()).then(d=>alert(d.message));
+}
 </script>
 </body>
 </html>
