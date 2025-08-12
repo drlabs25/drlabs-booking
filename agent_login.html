@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Agent Login - Dr. Labs</title>
+<title>Agent Login</title>
 <style>
- body{font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,lightblue,lightgreen);display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
- .card{background:#fff;padding:20px;border-radius:10px;width:320px;box-shadow:0 6px 18px rgba(0,0,0,0.08)}
- input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:1px solid #ccc}
- button{width:100%;padding:10px;background:#007bff;color:#fff;border:0;border-radius:6px;cursor:pointer}
+  body{font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,lightblue,lightgreen);display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+  .card{background:#fff;padding:20px;border-radius:8px;width:320px;box-shadow:0 6px 18px rgba(0,0,0,0.08)}
+  input{width:100%;padding:10px;margin:8px 0;border-radius:6px;border:1px solid #ccc}
+  button{width:100%;padding:10px;border-radius:6px;border:0;background:#007bff;color:#fff;cursor:pointer}
 </style>
 </head>
 <body>
@@ -21,16 +21,15 @@
   </div>
 
 <script>
-const WEB_APP = 'https://script.google.com/macros/s/AKfycbxP3_J7NBRfkR82U_zqY102D1mhVvXbTXTvW-2L785h4_G4ac61u-SPfx7eZcT6RzKGeQ/exec';
-function login(){
+const WEB_APP = 'https://script.google.com/macros/s/AKfycbzCR-SayJVb0CUqY6UvGZlHdF0ZvfBejMR2qDndRI8dEVP1Lofq3BYnBkWpMl35pVyudg/exec'; // replace
+async function login(){
   const u = document.getElementById('u').value.trim();
   const p = document.getElementById('p').value.trim();
   if(!u||!p){ document.getElementById('msg').innerText='Enter credentials'; return; }
-  fetch(`${WEB_APP}?action=loginUser&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}&role=Agent`)
-    .then(r=>r.json()).then(j=>{
-      if(j.success){ localStorage.setItem('agentName', j.name || u); location.href='booking.html'; }
-      else document.getElementById('msg').innerText='Invalid credentials or inactive';
-    }).catch(e=>{ document.getElementById('msg').innerText='Server error'; console.error(e); });
+  const res = await fetch(`${WEB_APP}?action=loginUser&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}&role=Agent`);
+  const j = await res.json();
+  if(j.success){ localStorage.setItem('agentName', j.name || u); location.href='booking.html'; }
+  else document.getElementById('msg').innerText='Invalid credentials or inactive';
 }
 </script>
 </body>
