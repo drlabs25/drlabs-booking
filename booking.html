@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <title>Booking - Dr. Labs</title>
 <style>
-  body{font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,lightblue,lightgreen);margin:0;padding:18px}
-  .header{display:flex;justify-content:space-between;align-items:center}
-  .back{padding:8px 12px;background:#007bff;color:#fff;border:0;border-radius:6px;cursor:pointer}
-  .card{background:#fff;padding:12px;border-radius:8px;margin-top:12px;max-width:900px}
-  input,select,textarea,button{width:100%;padding:8px;margin:6px 0;border-radius:6px;border:1px solid #ccc}
-  .row{display:flex;gap:8px}
-  .col{flex:1}
-  @media(max-width:800px){ .row{flex-direction:column} }
+ body{font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,lightblue,lightgreen);margin:0;padding:18px}
+ .header{display:flex;justify-content:space-between;align-items:center}
+ .back{padding:8px 12px;background:#007bff;color:#fff;border:0;border-radius:6px;cursor:pointer}
+ .card{background:#fff;padding:12px;border-radius:8px;margin-top:12px;max-width:900px}
+ input,select,textarea,button{width:100%;padding:8px;margin:6px 0;border-radius:6px;border:1px solid #ccc}
+ .row{display:flex;gap:8px}
+ .col{flex:1}
+ @media(max-width:800px){ .row{flex-direction:column} }
 </style>
 </head>
 <body>
@@ -23,8 +23,8 @@
   <div class="card">
     <h3>Search Phone / Create Booking</h3>
     <input id="phone" placeholder="Customer Phone (10 digits)">
-    <button onclick="searchPhone()">Search</button>
-    <div id="results"></div>
+    <button onclick="onPhoneSearch()">Search</button>
+    <div id="phoneResult"></div>
   </div>
 
   <div class="card" id="formCard" style="display:none">
@@ -56,55 +56,62 @@
   </div>
 
 <script>
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyKsG28Vso10fvXim3w9aAEnOwS5GO3IIoxSyUSOZyrG4U1DcDbyfUraYhTPzleNJrTgA/exec';
+const WEB_APP = 'https://script.google.com/macros/s/AKfycbxP3_J7NBRfkR82U_zqY102D1mhVvXbTXTvW-2L785h4_G4ac61u-SPfx7eZcT6RzKGeQ/exec';
 const agentName = localStorage.getItem('agentName') || '';
 document.getElementById('agentDisplay').innerText = 'Agent: ' + (agentName || 'Not logged');
 
 async function loadDropdowns(){
   try{
-    const res = await fetch(`${WEB_APP_URL}?action=getDropdownData`);
+    const res = await fetch(`${WEB_APP}?action=getDropdownData`);
     const data = await res.json();
     // technicians
     const tech = document.getElementById('technician'); tech.innerHTML = '<option value="">-- Technician --</option>';
     (data.technicians||[]).forEach(t=> tech.add(new Option(t,t)));
     // tests
     const tests = document.getElementById('tests'); tests.innerHTML='';
-    (data.tests||[]).forEach(t=>{ let o = document.createElement('option'); o.value = JSON.stringify(t); o.text = `${t.name} — ₹${t.cost}`; tests.add(o); });
+    (data.tests||[]).forEach(t=>{ let o=document.createElement('option'); o.value = JSON.stringify(t); o.text = `${t.name} — ₹${t.cost}`; tests.add(o); });
     // packages
     const pk = document.getElementById('packages'); pk.innerHTML='';
-    (data.packages||[]).forEach(p=>{ let o=document.createElement('option'); o.value=JSON.stringify(p); o.text=`${p.name} — ₹${p.cost}`; pk.add(o); });
+    (data.packages||[]).forEach(p=>{ let o=document.createElement('option'); o.value = JSON.stringify(p); o.text = `${p.name} — ₹${p.cost}`; pk.add(o); });
     // discounts
     const disc = document.getElementById('discount'); disc.innerHTML='';
     (data.discounts||[]).forEach(d=> disc.add(new Option(d,d)));
     // pref times
     const times = ["6:00 AM - 6:30 AM","6:30 AM - 7:00 AM","7:00 AM - 7:30 AM","7:30 AM - 8:00 AM","8:00 AM - 8:30 AM","8:30 AM - 9:00 AM","9:00 AM - 9:30 AM","9:30 AM - 10:00 AM","10:00 AM - 10:30 AM","10:30 AM - 11:00 AM","11:00 AM - 11:30 AM","11:30 AM - 12:00 PM","12:00 PM - 12:30 PM","12:30 PM - 1:00 PM","1:00 PM - 1:30 PM","1:30 PM - 2:00 PM","2:00 PM - 2:30 PM","2:30 PM - 3:00 PM","3:00 PM - 3:30 PM","3:30 PM - 4:00 PM","4:00 PM - 4:30 PM","4:30 PM - 5:00 PM","5:00 PM - 5:30 PM","5:30 PM - 6:00 PM"];
-    const pt = document.getElementById('prefTime'); times.forEach(t=>pt.add(new Option(t,t)));
+    const pt = document.getElementById('prefTime'); pt.innerHTML='';
+    times.forEach(t=>pt.add(new Option(t,t)));
+    calculateTotals();
   }catch(e){ console.error(e); alert('Failed to load dropdowns'); }
 }
 loadDropdowns();
 
 function calcAge(){ const v=document.getElementById('dob').value; if(!v)return; const a=new Date(); const d=new Date(v); let age=a.getFullYear()-d.getFullYear(); const m=a.getMonth()-d.getMonth(); if(m<0 || (m===0 && a.getDate()<d.getDate())) age--; document.getElementById('age').value = age; }
 
-function searchPhone(){
+function onPhoneSearch(){
   const phone = document.getElementById('phone').value.trim();
   if(!/^\d{10}$/.test(phone)) return alert('Enter 10-digit phone');
-  fetch(`${WEB_APP_URL}?action=getBookingsByPhone&phone=${encodeURIComponent(phone)}`).then(r=>r.json()).then(data=>{
-    let html = '';
-    if(data.length===0) html = '<div>No bookings yet. Fill form to create.</div>';
-    else {
-      html = '<table style="width:100%;border-collapse:collapse;"><tr><th>Name</th><th>City</th><th>Technician</th><th>Date</th><th>Time</th><th>Status</th></tr>';
-      data.forEach(d=> html += `<tr><td>${d.name}</td><td>${d.city}</td><td>${d.technician}</td><td>${d.date}</td><td>${d.time}</td><td>${d.status}</td></tr>`);
+  fetch(`${WEB_APP}?action=getBookingsByPhone&phone=${encodeURIComponent(phone)}`).then(r=>r.json()).then(j=>{
+    if(j.success && j.bookings && j.bookings.length){
+      // show bookings
+      var html = '<table style="width:100%;border-collapse:collapse"><tr><th>Name</th><th>City</th><th>Technician</th><th>Date</th><th>Time</th><th>Status</th><th>Actions</th></tr>';
+      j.bookings.forEach(b=> {
+        html += `<tr><td>${b.name}</td><td>${b.city}</td><td>${b.technician}</td><td>${b.prefDate}</td><td>${b.prefTime}</td><td>${b.status}</td>
+          <td><button onclick="updateStatus('${b.phone}','${b.prefDate}','${b.prefTime}','Cancelled')">Cancel</button>
+              <button onclick="updateStatus('${b.phone}','${b.prefDate}','${b.prefTime}','Report Generated')">Report Generated</button></td></tr>`;
+      });
       html += '</table>';
+      document.getElementById('phoneResult').innerHTML = html;
+    } else {
+      document.getElementById('phoneResult').innerHTML = '<div>No bookings found. Fill the form to create one.</div>';
     }
-    document.getElementById('results').innerHTML = html;
     document.getElementById('formCard').style.display = 'block';
-  }).catch(err=>{ console.error(err); alert('Failed to query bookings'); });
+  }).catch(e=>{ console.error(e); alert('Fetch failed'); });
 }
 
-function calculateTotals() {
+function calculateTotals(){
   let total = 0;
-  Array.from(document.getElementById('tests').selectedOptions).forEach(o => { try { total += Number(JSON.parse(o.value).cost || 0); } catch(e){} });
-  Array.from(document.getElementById('packages').selectedOptions).forEach(o => { try { total += Number(JSON.parse(o.value).cost || 0); } catch(e){} });
+  Array.from(document.getElementById('tests').selectedOptions).forEach(o=> { try{ total += Number(JSON.parse(o.value).cost||0); } catch(e){} });
+  Array.from(document.getElementById('packages').selectedOptions).forEach(o=> { try{ total += Number(JSON.parse(o.value).cost||0); } catch(e){} });
   document.getElementById('totalAmount').value = total;
   let discStr = document.getElementById('discount').value || '0';
   let discNum = parseFloat(String(discStr).replace('%','')) || 0;
@@ -113,17 +120,12 @@ function calculateTotals() {
   let finalAmt = discounted + tech;
   document.getElementById('finalAmount').value = finalAmt.toFixed(2);
 }
-['tests','packages','discount','techCharge'].forEach(id=>{ const el=document.getElementById(id); el && el.addEventListener('change', calculateTotals); el && el.addEventListener('input', calculateTotals); });
-
-function submitBookingData(params){
-  const qs = new URLSearchParams(params).toString();
-  return fetch(`${WEB_APP_URL}?${qs}`).then(r=>r.json());
-}
+['tests','packages','discount','techCharge'].forEach(id=>{ const el=document.getElementById(id); if(el){ el.addEventListener('change', calculateTotals); el.addEventListener('input', calculateTotals); } });
 
 function submitBooking(){
   const phone = document.getElementById('phone').value.trim();
   if(!/^\d{10}$/.test(phone)) return alert('Enter phone first');
-  const payload = {
+  const params = {
     action: 'createBooking',
     phone: phone,
     name: document.getElementById('name').value.trim(),
@@ -140,15 +142,20 @@ function submitBooking(){
     tests: JSON.stringify(Array.from(document.getElementById('tests').selectedOptions).map(o=>JSON.parse(o.value))),
     packages: JSON.stringify(Array.from(document.getElementById('packages').selectedOptions).map(o=>JSON.parse(o.value))),
     totalAmount: document.getElementById('totalAmount').value || 0,
-    discount: document.getElementById('discount').value || 0,
+    discount: document.getElementById('discount').value || '0',
     techCharge: document.getElementById('techCharge').value || 0,
     finalAmount: document.getElementById('finalAmount').value || 0,
     agentName: agentName
   };
-  submitBookingData(payload).then(res=>{
-    if(res.success){ alert('Booking created'); document.getElementById('formCard').reset && document.getElementById('formCard').reset(); document.getElementById('formCard').style.display='none'; document.getElementById('results').innerHTML=''; }
-    else alert('Failed: '+(res.error||'unknown'));
-  }).catch(err=>{ console.error(err); alert('Server error'); });
+  fetch(`${WEB_APP}?${new URLSearchParams(params)}`).then(r=>r.json()).then(j=>{
+    if(j.success){ alert('Booking created'); document.getElementById('formCard').style.display='none'; document.getElementById('phoneResult').innerHTML=''; }
+    else alert('Failed: '+(j.error||'unknown'));
+  }).catch(e=>{ console.error(e); alert('Network error'); });
+}
+
+function updateStatus(phone,date,time,status){
+  fetch(`${WEB_APP}?action=updateStatus&phone=${encodeURIComponent(phone)}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}&status=${encodeURIComponent(status)}`)
+    .then(r=>r.json()).then(j=>{ if(j.success) { alert('Status updated'); onPhoneSearch(); } else alert('Failed'); }).catch(e=>{ console.error(e); alert('Error'); });
 }
 </script>
 </body>
