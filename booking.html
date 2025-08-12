@@ -1,275 +1,210 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
+<meta charset="UTF-8">
 <title>Booking - Dr. Labs</title>
-<meta name="viewport" content="width=device-width,initial-scale=1" />
 <style>
-  :root{--primary:#007BFF;--green:#28a745;--red:#dc3545;--blue:#007bff}
-  body{font-family:Arial,Helvetica,sans-serif;margin:0;background:linear-gradient(135deg,lightblue,lightgreen);padding:18px}
-  .top{display:flex;justify-content:space-between;align-items:center;gap:12px}
-  .back{padding:8px 12px;background:var(--primary);color:#fff;border:0;border-radius:6px;cursor:pointer}
-  .agent{font-weight:700;background:#fff;padding:8px 12px;border-radius:8px}
-  h1{margin:14px 0}
-  form{background:#fff;padding:14px;border-radius:10px}
-  label{display:block;margin-top:10px;font-weight:600}
-  input,select,textarea{width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;margin-top:6px}
-  .row{display:flex;gap:10px}
-  .col{flex:1}
-  .small{width:160px}
-  .submit{margin-top:12px;padding:10px 14px;background:green;color:#fff;border:0;border-radius:8px;cursor:pointer}
-  .list{margin-top:18px}
-  .card{padding:12px;border-radius:8px;color:#fff;margin-bottom:10px}
-  .confirmed{background:var(--green)}
-  .cancelled{background:var(--red)}
-  .reported{background:var(--blue)}
-  .action{margin:6px 6px 0 0;padding:6px 10px;border-radius:6px;border:0;background:#fff;cursor:pointer}
-  @media(max-width:800px){.row{flex-direction:column}.small{width:100%}}
+    body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(to bottom right, lightblue, lightgreen);
+        padding: 20px;
+    }
+    h2 {
+        text-align: center;
+    }
+    .section {
+        background: white;
+        padding: 15px;
+        margin: 20px auto;
+        border-radius: 8px;
+        max-width: 800px;
+    }
+    input, select, button {
+        padding: 8px;
+        margin: 5px;
+        width: calc(100% - 20px);
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    button {
+        background: #007BFF;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+    button:hover {
+        background: #0056b3;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+    th, td {
+        border: 1px solid #ccc;
+        padding: 6px;
+        text-align: center;
+    }
+    .status-confirmed { background: lightgreen; }
+    .status-cancelled { background: lightcoral; }
+    .status-reported { background: lightblue; }
 </style>
 </head>
 <body>
-  <div class="top">
-    <button class="back" onclick="location.href='index.html'">⬅ Back</button>
-    <div id="agentInfo" class="agent">Agent: —</div>
-  </div>
 
-  <h1>Booking Form</h1>
+<h2>Agent Booking Page</h2>
+<div id="agentNameDisplay"></div>
 
-  <label>Customer Number (10 digits)</label>
-  <div style="display:flex;gap:8px;margin-bottom:8px">
-    <input id="phoneSearch" placeholder="9876543210" maxlength="10" />
-    <button class="back" onclick="onPhoneSearch()">Search</button>
-  </div>
+<div class="section">
+    <input type="text" id="phone" placeholder="Customer Phone (10 digits)">
+    <button onclick="searchBookings()">Search / Create Booking</button>
+    <div id="pastBookings"></div>
+</div>
 
-  <form id="form" onsubmit="onSubmit(event)">
-    <div class="row">
-      <div class="col">
-        <label>Customer Name</label><input id="custName" required>
-      </div>
-      <div class="small">
-        <label>DOB</label><input type="date" id="dob" onchange="calcAge()">
-      </div>
-    </div>
+<div class="section" id="bookingForm" style="display:none;">
+    <input type="text" id="custName" placeholder="Customer Name" required>
+    <input type="date" id="dob" onchange="calculateAge()">
+    <input type="number" id="age" placeholder="Age" required>
+    <select id="gender">
+        <option value="">Select Gender</option>
+        <option>Male</option>
+        <option>Female</option>
+    </select>
+    <input type="text" id="address" placeholder="Address" required>
+    <input type="text" id="location" placeholder="Location" required>
+    <select id="city">
+        <option>Chennai</option>
+        <option>Bangalore</option>
+        <option>Hyderabad</option>
+        <option>Mumbai</option>
+        <option>Delhi</option>
+        <option>Coimbatore</option>
+    </select>
+    <select id="technician"></select>
+    <input type="text" id="pincode" placeholder="Pincode" maxlength="6">
+    <input type="date" id="prefDate" min="">
+    <select id="prefTime"></select>
 
-    <div class="row">
-      <div class="small"><label>Age</label><input type="number" id="age" min="0" required></div>
-      <div class="col"><label>Gender</label>
-        <select id="gender" required><option value="">Select</option><option>Male</option><option>Female</option></select>
-      </div>
-    </div>
-
-    <label>Address</label><textarea id="address" rows="2" maxlength="500" required></textarea>
-
-    <div class="row">
-      <div class="col"><label>Location</label><input id="location" maxlength="100" required></div>
-      <div class="small">
-        <label>City</label>
-        <select id="city" required>
-          <option value="">Select</option><option>Chennai</option><option>Bangalore</option><option>Hyderabad</option>
-          <option>Mumbai</option><option>Delhi</option><option>Coimbatore</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col"><label>Technician</label><select id="technician" required><option>Loading…</option></select></div>
-      <div class="small"><label>Pincode</label><input id="pincode" maxlength="6" required></div>
-    </div>
-
-    <div class="row">
-      <div class="small"><label>Preferred Date</label><input type="date" id="prefDate" required></div>
-      <div class="col"><label>Preferred Time</label><select id="prefTime" required></select></div>
-    </div>
-
-    <div class="row">
-      <div class="col">
-        <label>Tests (multi)</label>
-        <select id="tests" multiple style="height:120px"></select>
-      </div>
-      <div class="col">
-        <label>Packages (multi)</label>
-        <select id="packages" multiple style="height:120px"></select>
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col"><label>Total Amount</label><input id="totalAmount" readonly></div>
-      <div class="small"><label>Discount</label><select id="discount" required></select></div>
-    </div>
-
-    <div class="row">
-      <div class="col"><label>Technician Charge</label><input id="techCharge" type="number" min="0" value="0" required></div>
-      <div class="small"><label>Total Payable</label><input id="totalPayable" readonly></div>
-    </div>
-
-    <button class="submit" type="submit">Submit Booking</button>
-  </form>
-
-  <div class="list" id="bookingList"></div>
+    <h4>Tests</h4>
+    <select id="tests" multiple></select>
+    <h4>Packages</h4>
+    <select id="packages" multiple></select>
+    <input type="number" id="totalAmount" placeholder="Total Amount" readonly>
+    <select id="discount"></select>
+    <input type="number" id="techCharge" placeholder="Technician Charge">
+    <input type="number" id="finalAmount" placeholder="Final Amount" readonly>
+    <button onclick="createBooking()">Submit Booking</button>
+</div>
 
 <script>
-/* ====== CONFIG - paste your deployed Apps Script Web App URL here ====== */
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxRh_dbUi8equeTgJlY1e9klbSxY6F_CvWfjG9UTFBX_D9i-cQwPTXY2Dz2wxKDGVPPDw/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbychu9AqOmWGUPEbjiofDMDJZ4dukfQyhEVYZTfBEBl1uWoZI02mCPB9pQP6D9Kk2c3Dw/exec";
+const agentName = localStorage.getItem("agentName") || "Agent";
+document.getElementById("agentNameDisplay").innerText = "Logged in as: " + agentName;
 
-/* ====== session agent check ====== */
-const agentName = localStorage.getItem('agentName') || null;
-if(!agentName){ location.href='agent_login.html'; } else {
-  document.getElementById('agentInfo').textContent = `Agent: ${agentName} | ${new Date().toLocaleString()}`;
-}
-
-/* ====== populate dropdowns ====== */
-async function loadData(){
-  try{
-    const res = await fetch(`${WEB_APP_URL}?action=getDropdownData`);
-    const data = await res.json();
-    // technicians
-    const techSel = document.getElementById('technician');
-    techSel.innerHTML = '<option value="">-- Select Technician --</option>';
-    (data.technicians||[]).forEach(t=> techSel.add(new Option(t,t)));
-    // tests
-    const tests = document.getElementById('tests'); tests.innerHTML='';
-    (data.tests||[]).forEach(t=>{
-        const o=document.createElement('option'); o.value = t.name; o.dataset.cost = t.cost; o.textContent = `${t.name} — ₹${t.cost}`; tests.add(o);
+// Prefill dropdowns
+fetch(WEB_APP_URL + "?action=getDropdownData")
+    .then(r => r.json())
+    .then(data => {
+        data.technicians.forEach(t => {
+            let opt = document.createElement("option");
+            opt.text = t;
+            document.getElementById("technician").add(opt);
+        });
+        data.tests.forEach(t => {
+            let opt = document.createElement("option");
+            opt.text = `${t.name} (${t.cost})`;
+            opt.value = t.name;
+            document.getElementById("tests").add(opt);
+        });
+        data.packages.forEach(p => {
+            let opt = document.createElement("option");
+            opt.text = `${p.name} (${p.cost})`;
+            opt.value = p.name;
+            document.getElementById("packages").add(opt);
+        });
+        data.discounts.forEach(d => {
+            let opt = document.createElement("option");
+            opt.text = d;
+            opt.value = d;
+            document.getElementById("discount").add(opt);
+        });
     });
-    // packages
-    const pkgs = document.getElementById('packages'); pkgs.innerHTML='';
-    (data.packages||[]).forEach(p=>{
-      const o=document.createElement('option'); o.value=p.name; o.dataset.cost=p.cost; o.textContent=`${p.name} — ₹${p.cost}`; pkgs.add(o);
-    });
-    // discounts
-    const disc = document.getElementById('discount'); disc.innerHTML='';
-    (data.discounts||[]).forEach(d => disc.add(new Option(d, d)));
-    // times
-    const times = [
-      "6:00 AM - 6:30 AM","6:30 AM - 7:00 AM","7:00 AM - 7:30 AM","7:30 AM - 8:00 AM",
-      "8:00 AM - 8:30 AM","8:30 AM - 9:00 AM","9:00 AM - 9:30 AM","9:30 AM - 10:00 AM",
-      "10:00 AM - 10:30 AM","10:30 AM - 11:00 AM","11:00 AM - 11:30 AM","11:30 AM - 12:00 PM",
-      "12:00 PM - 12:30 PM","12:30 PM - 1:00 PM","1:00 PM - 1:30 PM","1:30 PM - 2:00 PM",
-      "2:00 PM - 2:30 PM","2:30 PM - 3:00 PM","3:00 PM - 3:30 PM","3:30 PM - 4:00 PM",
-      "4:00 PM - 4:30 PM","4:30 PM - 5:00 PM","5:00 PM - 5:30 PM","5:30 PM - 6:00 PM"
-    ];
-    const tsel = document.getElementById('prefTime'); tsel.innerHTML='';
-    times.forEach(t=>tsel.add(new Option(t,t)));
-    calculateTotals();
-  }catch(err){ console.error('loadData',err); alert('Failed to load dropdown data'); }
-}
-loadData();
 
-/* ====== calculations ====== */
-function calculateTotals(){
-  let total=0;
-  Array.from(document.getElementById('tests').selectedOptions).forEach(o=> total += Number(o.dataset.cost||0));
-  Array.from(document.getElementById('packages').selectedOptions).forEach(o=> total += Number(o.dataset.cost||0));
-  document.getElementById('totalAmount').value = total;
-  const discRaw = document.getElementById('discount').value || '0';
-  const discNum = parseFloat(String(discRaw).replace('%','')) || 0;
-  const techCharge = Number(document.getElementById('techCharge').value||0);
-  const discounted = total - Math.round((total * discNum)/100);
-  const payable = discounted + techCharge;
-  document.getElementById('totalPayable').value = payable.toFixed(2);
-}
-['tests','packages','discount','techCharge'].forEach(id=>{
-  document.getElementById(id).addEventListener('change', calculateTotals);
-  document.getElementById(id).addEventListener('input', calculateTotals);
-});
-
-/* age */
-function calcAge(){
-  const v = document.getElementById('dob').value; if(!v) return;
-  const dob = new Date(v); const today = new Date();
-  let age = today.getFullYear() - dob.getFullYear(); const m = today.getMonth() - dob.getMonth();
-  if(m<0 || (m===0 && today.getDate()<dob.getDate())) age--;
-  document.getElementById('age').value = age >=0 ? age : 0;
+function searchBookings() {
+    const phone = document.getElementById("phone").value;
+    if (!/^\d{10}$/.test(phone)) return alert("Enter valid 10 digit phone");
+    fetch(WEB_APP_URL + "?action=getBookingsByPhone&phone=" + phone)
+        .then(r => r.json())
+        .then(data => {
+            let html = "<table><tr><th>Name</th><th>City</th><th>Technician</th><th>Date</th><th>Time</th><th>Status</th><th>Actions</th></tr>";
+            data.forEach(b => {
+                html += `<tr class="status-${b.status.toLowerCase()}">
+                    <td>${b.name}</td>
+                    <td>${b.city}</td>
+                    <td>${b.technician}</td>
+                    <td>${b.date}</td>
+                    <td>${b.time}</td>
+                    <td>${b.status}</td>
+                    <td>
+                        <button onclick="updateStatus('${b.phone}','${b.date}','${b.time}','Cancelled')">Cancel</button>
+                        <button onclick="updateStatus('${b.phone}','${b.date}','${b.time}','Reported')">Report Generated</button>
+                    </td>
+                </tr>`;
+            });
+            html += "</table>";
+            document.getElementById("pastBookings").innerHTML = html;
+            document.getElementById("bookingForm").style.display = "block";
+        });
 }
 
-/* ====== submit booking (GET to match Code.gs) ====== */
-async function onSubmit(e){
-  e.preventDefault();
-  const phone = document.getElementById('phoneSearch').value.trim();
-  if(!/^\d{10}$/.test(phone)){ return alert('Enter a valid 10-digit phone in search field'); }
-
-  // collect values
-  const payload = {
-    action: 'createBooking',
-    phone,
-    name: document.getElementById('custName').value.trim(),
-    dob: document.getElementById('dob').value,
-    age: document.getElementById('age').value,
-    gender: document.getElementById('gender').value,
-    address: document.getElementById('address').value.trim(),
-    location: document.getElementById('location').value.trim(),
-    city: document.getElementById('city').value,
-    technician: document.getElementById('technician').value,
-    pincode: document.getElementById('pincode').value,
-    prefDate: document.getElementById('prefDate').value,
-    prefTime: document.getElementById('prefTime').value,
-    tests: JSON.stringify(Array.from(document.getElementById('tests').selectedOptions).map(o=>o.value)),
-    packages: JSON.stringify(Array.from(document.getElementById('packages').selectedOptions).map(o=>o.value)),
-    totalAmount: document.getElementById('totalAmount').value || 0,
-    discount: document.getElementById('discount').value,
-    techCharge: document.getElementById('techCharge').value || 0,
-    finalAmount: document.getElementById('totalPayable').value || 0,
-    agentName
-  };
-
-  // build query string
-  const qs = Object.keys(payload).map(k => `${encodeURIComponent(k)}=${encodeURIComponent(payload[k])}`).join('&');
-  try{
-    const res = await fetch(`${WEB_APP_URL}?${qs}`);
-    const data = await res.json();
-    if(data && data.success){ alert('Booking created'); document.getElementById('form').reset(); calculateTotals(); searchByPhone(phone); }
-    else alert('Save failed: ' + (data.message || 'unknown'));
-  }catch(err){ console.error(err); alert('Network or server error'); }
+function updateStatus(phone,date,time,status) {
+    fetch(WEB_APP_URL + "?action=updateStatus&phone=" + phone + "&date=" + date + "&time=" + time + "&status=" + status)
+        .then(r => r.json())
+        .then(d => {
+            alert(status + " updated");
+            searchBookings();
+        });
 }
 
-/* ====== search bookings by phone ====== */
-async function onPhoneSearch(){
-  const phone = document.getElementById('phoneSearch').value.trim();
-  if(!/^\d{10}$/.test(phone)) return alert('Enter 10-digit phone');
-  searchByPhone(phone);
+function calculateAge() {
+    const dob = document.getElementById("dob").value;
+    if (dob) {
+        const diff = Date.now() - new Date(dob).getTime();
+        const age = new Date(diff).getUTCFullYear() - 1970;
+        document.getElementById("age").value = age;
+    }
 }
 
-async function searchByPhone(phone){
-  try{
-    const res = await fetch(`${WEB_APP_URL}?action=getBookingsByPhone&phone=${encodeURIComponent(phone)}`);
-    const data = await res.json();
-    renderList(data || []);
-  }catch(err){ console.error(err); alert('Failed to fetch bookings'); }
-}
-
-function renderList(list){
-  const container = document.getElementById('bookingList'); container.innerHTML='';
-  if(!list.length){ container.innerHTML = '<div style="color:#333">No bookings found</div>'; return; }
-  list.forEach(b=>{
-    const div = document.createElement('div');
-    const cls = b.status==='Cancelled' ? 'cancelled' : (b.status==='Report Generated' ? 'reported' : 'confirmed');
-    div.className = `card ${cls}`;
-    div.innerHTML = `
-      <div style="font-weight:700">${b.name} — ${b.phone||''}</div>
-      <div style="font-size:13px">City: ${b.city} | Technician: ${b.technician}</div>
-      <div style="font-size:13px">${b.date} | ${b.time}</div>
-      <div style="margin-top:8px">Status: <strong>${b.status}</strong></div>
-      <div style="margin-top:8px">
-        <button class="action" onclick="modifyBooking('${b.phone}','${b.date}','${b.time}')">Modify</button>
-        <button class="action" onclick="updateStatus('${b.phone}','${b.date}','${b.time}','Report Generated')">Report Generated</button>
-        <button class="action" onclick="updateStatus('${b.phone}','${b.date}','${b.time}','Cancelled')">Cancel</button>
-      </div>`;
-    container.appendChild(div);
-  });
-}
-
-/* ====== update status (phone,date,time,status) ====== */
-async function updateStatus(phone,date,time,status){
-  try{
-    await fetch(`${WEB_APP_URL}?action=updateStatus&phone=${encodeURIComponent(phone)}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}&status=${encodeURIComponent(status)}`);
-    searchByPhone(phone);
-  }catch(e){ console.error(e); alert('Failed to update status'); }
-}
-
-/* ====== modify (simple: alert + eventual implementation) ====== */
-function modifyBooking(phone,date,time){
-  alert('To modify: load the booking into the form and implement update logic. Current backend only sets status. \n\nPhone: '+phone+'\nDate: '+date+'\nTime: '+time);
+function createBooking() {
+    const params = {
+        phone: document.getElementById("phone").value,
+        name: document.getElementById("custName").value,
+        dob: document.getElementById("dob").value,
+        age: document.getElementById("age").value,
+        gender: document.getElementById("gender").value,
+        address: document.getElementById("address").value,
+        location: document.getElementById("location").value,
+        city: document.getElementById("city").value,
+        technician: document.getElementById("technician").value,
+        pincode: document.getElementById("pincode").value,
+        prefDate: document.getElementById("prefDate").value,
+        prefTime: document.getElementById("prefTime").value,
+        tests: [...document.getElementById("tests").selectedOptions].map(o=>o.value).join(", "),
+        packages: [...document.getElementById("packages").selectedOptions].map(o=>o.value).join(", "),
+        totalAmount: document.getElementById("totalAmount").value,
+        discount: document.getElementById("discount").value,
+        techCharge: document.getElementById("techCharge").value,
+        finalAmount: document.getElementById("finalAmount").value,
+        agentName: agentName
+    };
+    fetch(WEB_APP_URL + "?action=createBooking&" + new URLSearchParams(params))
+        .then(r => r.json())
+        .then(d => {
+            alert("Booking Created!");
+            searchBookings();
+        });
 }
 </script>
+
 </body>
 </html>

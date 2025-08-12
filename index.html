@@ -1,67 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Dr. Labs Booking Portal</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: linear-gradient(to bottom right, lightblue, lightgreen);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            color: #333;
-        }
-        .logo img {
-            max-width: 200px;
-            margin-bottom: 20px;
-        }
-        h1 {
-            margin-bottom: 30px;
-            font-size: 2em;
-            font-weight: bold;
-            text-align: center;
-        }
-        .button-container {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            width: 250px;
-        }
-        button {
-            padding: 15px;
-            font-size: 1.1em;
-            cursor: pointer;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Dr. Labs Booking Portal</title>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(to bottom right, lightblue, lightgreen);
+        text-align: center;
+        color: #333;
+    }
+    .logo {
+        margin-top: 40px;
+    }
+    h1 {
+        margin-top: 20px;
+        font-size: 2em;
+        font-weight: bold;
+    }
+    .button-container {
+        margin-top: 40px;
+    }
+    button {
+        padding: 15px 30px;
+        font-size: 1.1em;
+        margin: 15px;
+        cursor: pointer;
+        background-color: #007BFF;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        transition: 0.3s;
+    }
+    button:hover {
+        background-color: #0056b3;
+    }
+    footer {
+        margin-top: 40px;
+        font-size: 0.9em;
+        color: #555;
+    }
+</style>
 </head>
 <body>
 
-    <!-- Logo -->
-    <div class="logo">
-        <img src="dr_labs_logo.png" alt="Dr. Labs Logo">
-    </div>
+<!-- Logo -->
+<div class="logo">
+    <img src="dr_labs_logo.png" alt="Dr. Labs Logo" width="200">
+</div>
 
-    <!-- Welcome Text -->
-    <h1>Welcome to Dr. Labs Booking Portal</h1>
+<!-- Welcome Text -->
+<h1>Welcome to Dr. Labs Booking Portal</h1>
 
-    <!-- Buttons -->
-    <div class="button-container">
-        <button onclick="location.href='admin_login.html'">Admin Login</button>
-        <button onclick="location.href='agent_login.html'">Agent Login</button>
-        <button onclick="location.href='report.html'">Report</button>
-    </div>
+<!-- Buttons -->
+<div class="button-container">
+    <button onclick="goTo('admin_login.html')">Admin Login</button>
+    <button onclick="goTo('agent_login.html')">Agent Login</button>
+    <button onclick="goTo('report.html')">Report</button>
+</div>
+
+<footer>
+    &copy; 2025 Dr. Labs. All rights reserved.
+</footer>
+
+<script>
+function goTo(page) {
+    window.location.href = page;
+}
+</script>
 
 </body>
 </html>

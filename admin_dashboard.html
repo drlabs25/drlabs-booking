@@ -7,177 +7,138 @@
     body {
         font-family: Arial, sans-serif;
         background: linear-gradient(to bottom right, lightblue, lightgreen);
+        text-align: center;
         padding: 20px;
     }
-    .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: #007BFF;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 8px;
-    }
-    .header h1 {
-        margin: 0;
-        font-size: 20px;
+    h1 {
+        margin-bottom: 10px;
     }
     .section {
         background: white;
         padding: 15px;
-        border-radius: 10px;
-        margin-top: 20px;
-        box-shadow: 0px 2px 5px rgba(0,0,0,0.2);
+        margin: 20px auto;
+        border-radius: 8px;
+        width: 80%;
+        max-width: 600px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-    h2 {
-        background: #007BFF;
-        color: white;
-        padding: 10px;
-        border-radius: 5px;
-        font-size: 18px;
-    }
-    input {
+    input, select, button {
         padding: 8px;
         margin: 5px;
-        border-radius: 5px;
+        width: calc(100% - 20px);
         border: 1px solid #ccc;
-        width: 250px;
+        border-radius: 4px;
     }
     button {
-        padding: 10px 20px;
-        background-color: #007BFF;
+        background: #007BFF;
         color: white;
         border: none;
-        border-radius: 5px;
         cursor: pointer;
     }
     button:hover {
-        background-color: #0056b3;
+        background: #0056b3;
+    }
+    .logout {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        background: red;
     }
 </style>
-<script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxRh_dbUi8equeTgJlY1e9klbSxY6F_CvWfjG9UTFBX_D9i-cQwPTXY2Dz2wxKDGVPPDw/exec"; // Replace with your Apps Script Web App URL
-
-    window.onload = function () {
-        const adminName = localStorage.getItem("adminName");
-        if (!adminName) {
-            window.location.href = "admin_login.html";
-        } else {
-            document.getElementById("adminName").innerText = "Logged in as: " + adminName;
-        }
-    };
-
-    function logout() {
-        localStorage.removeItem("adminName");
-        window.location.href = "admin_login.html";
-    }
-
-    function addAgent() {
-        let username = document.getElementById("agentUsername").value;
-        let password = document.getElementById("agentPassword").value;
-        let name = document.getElementById("agentName").value;
-
-        fetch(WEB_APP_URL + "?action=createAgentCredential&username=" + encodeURIComponent(username) + "&password=" + encodeURIComponent(password) + "&name=" + encodeURIComponent(name))
-            .then(r => r.json())
-            .then(res => {
-                if (res.success) alert("Agent created successfully!");
-            });
-    }
-
-    function addTechnician() {
-        let name = document.getElementById("techName").value;
-        let empId = document.getElementById("techEmpId").value;
-        let location = document.getElementById("techLocation").value;
-
-        fetch(WEB_APP_URL + "?action=createTechnician&name=" + encodeURIComponent(name) + "&empId=" + encodeURIComponent(empId) + "&location=" + encodeURIComponent(location))
-            .then(r => r.json())
-            .then(res => {
-                if (res.success) alert("Technician added successfully!");
-            });
-    }
-
-    function addTest() {
-        let name = document.getElementById("testName").value;
-        let cost = document.getElementById("testCost").value;
-        let code = document.getElementById("testCode").value;
-
-        fetch(WEB_APP_URL + "?action=createTest&name=" + encodeURIComponent(name) + "&cost=" + encodeURIComponent(cost) + "&code=" + encodeURIComponent(code))
-            .then(r => r.json())
-            .then(res => {
-                if (res.success) alert("Test added successfully!");
-            });
-    }
-
-    function addPackage() {
-        let name = document.getElementById("packageName").value;
-        let cost = document.getElementById("packageCost").value;
-        let code = document.getElementById("packageCode").value;
-
-        fetch(WEB_APP_URL + "?action=createPackage&name=" + encodeURIComponent(name) + "&cost=" + encodeURIComponent(cost) + "&code=" + encodeURIComponent(code))
-            .then(r => r.json())
-            .then(res => {
-                if (res.success) alert("Package added successfully!");
-            });
-    }
-
-    function addDiscount() {
-        let discount = document.getElementById("discountValue").value;
-
-        fetch(WEB_APP_URL + "?action=createDiscount&discount=" + encodeURIComponent(discount))
-            .then(r => r.json())
-            .then(res => {
-                if (res.success) alert("Discount added successfully!");
-            });
-    }
-</script>
 </head>
 <body>
 
-<div class="header">
-    <h1>Admin Dashboard - Dr. Labs</h1>
-    <div>
-        <span id="adminName"></span> &nbsp;|&nbsp;
-        <button onclick="logout()">Logout</button>
-    </div>
-</div>
+<h1>Admin Dashboard</h1>
+<button class="logout" onclick="logout()">Logout</button>
 
 <div class="section">
-    <h2>Create Agent Credential</h2>
+    <h3>Create Agent Credential</h3>
     <input type="text" id="agentUsername" placeholder="Username" required>
-    <input type="password" id="agentPassword" placeholder="Password" required>
-    <input type="text" id="agentName" placeholder="Full Name" required>
-    <button onclick="addAgent()">Submit</button>
+    <input type="text" id="agentPassword" placeholder="Password" required>
+    <input type="text" id="agentName" placeholder="Agent Name" required>
+    <button onclick="createAgent()">Submit</button>
 </div>
 
 <div class="section">
-    <h2>Create Technician Details</h2>
+    <h3>Create Technician Details</h3>
     <input type="text" id="techName" placeholder="Technician Name" required>
     <input type="text" id="techEmpId" placeholder="Employee ID" required>
     <input type="text" id="techLocation" placeholder="Location" required>
-    <button onclick="addTechnician()">Submit</button>
+    <button onclick="createTechnician()">Submit</button>
 </div>
 
 <div class="section">
-    <h2>Add Test</h2>
+    <h3>Create Test</h3>
     <input type="text" id="testName" placeholder="Test Name" required>
     <input type="number" id="testCost" placeholder="Cost" required>
-    <input type="text" id="testCode" placeholder="Code" required>
-    <button onclick="addTest()">Submit</button>
+    <input type="text" id="testCode" placeholder="Test Code" required>
+    <button onclick="createTest()">Submit</button>
 </div>
 
 <div class="section">
-    <h2>Add Package</h2>
+    <h3>Create Package</h3>
     <input type="text" id="packageName" placeholder="Package Name" required>
     <input type="number" id="packageCost" placeholder="Cost" required>
-    <input type="text" id="packageCode" placeholder="Code" required>
-    <button onclick="addPackage()">Submit</button>
+    <input type="text" id="packageCode" placeholder="Package Code" required>
+    <button onclick="createPackage()">Submit</button>
 </div>
 
 <div class="section">
-    <h2>Create Discount</h2>
+    <h3>Create Discount</h3>
     <input type="text" id="discountValue" placeholder="Discount (e.g. 10%)" required>
-    <button onclick="addDiscount()">Submit</button>
+    <button onclick="createDiscount()">Submit</button>
 </div>
+
+<script>
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbychu9AqOmWGUPEbjiofDMDJZ4dukfQyhEVYZTfBEBl1uWoZI02mCPB9pQP6D9Kk2c3Dw/exec";
+
+function postData(action, params) {
+    return fetch(WEB_APP_URL + "?action=" + action + "&" + new URLSearchParams(params))
+        .then(res => res.json());
+}
+
+function createAgent() {
+    postData("createAgentCredential", {
+        username: document.getElementById("agentUsername").value,
+        password: document.getElementById("agentPassword").value,
+        name: document.getElementById("agentName").value
+    }).then(r => alert(r.success ? "Agent Created!" : "Failed to create agent"));
+}
+
+function createTechnician() {
+    postData("createTechnician", {
+        name: document.getElementById("techName").value,
+        empId: document.getElementById("techEmpId").value,
+        location: document.getElementById("techLocation").value
+    }).then(r => alert(r.success ? "Technician Created!" : "Failed to create technician"));
+}
+
+function createTest() {
+    postData("createTest", {
+        name: document.getElementById("testName").value,
+        cost: document.getElementById("testCost").value,
+        code: document.getElementById("testCode").value
+    }).then(r => alert(r.success ? "Test Created!" : "Failed to create test"));
+}
+
+function createPackage() {
+    postData("createPackage", {
+        name: document.getElementById("packageName").value,
+        cost: document.getElementById("packageCost").value,
+        code: document.getElementById("packageCode").value
+    }).then(r => alert(r.success ? "Package Created!" : "Failed to create package"));
+}
+
+function createDiscount() {
+    postData("createDiscount", {
+        discount: document.getElementById("discountValue").value
+    }).then(r => alert(r.success ? "Discount Created!" : "Failed to create discount"));
+}
+
+function logout() {
+    window.location.href = "index.html";
+}
+</script>
 
 </body>
 </html>
