@@ -1,59 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8" />
 <title>Booking - Dr. Labs</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <style>
-  body{font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,lightblue,lightgreen);padding:18px;margin:0}
-  .top-bar{display:flex;justify-content:space-between;align-items:center;gap:12px}
-  .back-btn{padding:8px 12px;background:#007BFF;color:#fff;border:0;border-radius:6px;cursor:pointer}
-  .agent-info{font-weight:700;background:#fff;padding:8px 12px;border-radius:8px}
+  :root{--primary:#007BFF;--green:#28a745;--red:#dc3545;--blue:#007bff}
+  body{font-family:Arial,Helvetica,sans-serif;margin:0;background:linear-gradient(135deg,lightblue,lightgreen);padding:18px}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .back{padding:8px 12px;background:var(--primary);color:#fff;border:0;border-radius:6px;cursor:pointer}
+  .agent{font-weight:700;background:#fff;padding:8px 12px;border-radius:8px}
   h1{margin:14px 0}
   form{background:#fff;padding:14px;border-radius:10px}
   label{display:block;margin-top:10px;font-weight:600}
   input,select,textarea{width:100%;padding:8px;border:1px solid #ccc;border-radius:6px;margin-top:6px}
   .row{display:flex;gap:10px}
   .col{flex:1}
-  .submit-btn{margin-top:12px;padding:10px 14px;background:green;color:#fff;border:0;border-radius:8px;cursor:pointer}
-  .booking-list{margin-top:18px}
-  .booking-card{padding:12px;border-radius:8px;color:#fff;margin-bottom:10px}
-  .confirmed{background:#28a745}
-  .cancelled{background:#dc3545}
-  .reported{background:#007bff}
-  .action-btn{margin:6px 6px 0 0;padding:6px 10px;border-radius:6px;border:0;background:#fff;cursor:pointer}
-  @media(max-width:800px){ .row{flex-direction:column} }
+  .small{width:160px}
+  .submit{margin-top:12px;padding:10px 14px;background:green;color:#fff;border:0;border-radius:8px;cursor:pointer}
+  .list{margin-top:18px}
+  .card{padding:12px;border-radius:8px;color:#fff;margin-bottom:10px}
+  .confirmed{background:var(--green)}
+  .cancelled{background:var(--red)}
+  .reported{background:var(--blue)}
+  .action{margin:6px 6px 0 0;padding:6px 10px;border-radius:6px;border:0;background:#fff;cursor:pointer}
+  @media(max-width:800px){.row{flex-direction:column}.small{width:100%}}
 </style>
 </head>
 <body>
-  <div class="top-bar">
-    <button class="back-btn" onclick="location.href='index.html'">⬅ Back</button>
-    <div class="agent-info" id="agentInfo">Agent: —</div>
+  <div class="top">
+    <button class="back" onclick="location.href='index.html'">⬅ Back</button>
+    <div id="agentInfo" class="agent">Agent: —</div>
   </div>
 
   <h1>Booking Form</h1>
 
   <label>Customer Number (10 digits)</label>
   <div style="display:flex;gap:8px;margin-bottom:8px">
-    <input id="customerNumberSearch" placeholder="9876543210" maxlength="10" pattern="\d{10}">
-    <button onclick="onPhoneSearch()" class="back-btn" style="background:#0056b3">Search</button>
+    <input id="phoneSearch" placeholder="9876543210" maxlength="10" />
+    <button class="back" onclick="onPhoneSearch()">Search</button>
   </div>
 
-  <form id="bookingForm" onsubmit="submitBooking(event)">
+  <form id="form" onsubmit="onSubmit(event)">
     <div class="row">
       <div class="col">
-        <label>Customer Name</label><input id="customerName" required>
+        <label>Customer Name</label><input id="custName" required>
       </div>
-      <div style="width:140px">
+      <div class="small">
         <label>DOB</label><input type="date" id="dob" onchange="calcAge()">
       </div>
     </div>
 
     <div class="row">
-      <div style="width:130px">
-        <label>Age</label><input type="number" id="age" min="0" required>
-      </div>
-      <div class="col">
-        <label>Gender</label>
+      <div class="small"><label>Age</label><input type="number" id="age" min="0" required></div>
+      <div class="col"><label>Gender</label>
         <select id="gender" required><option value="">Select</option><option>Male</option><option>Female</option></select>
       </div>
     </div>
@@ -61,97 +61,85 @@
     <label>Address</label><textarea id="address" rows="2" maxlength="500" required></textarea>
 
     <div class="row">
-      <div class="col">
-        <label>Location</label><input id="location" maxlength="100" required>
-      </div>
-      <div style="width:180px">
+      <div class="col"><label>Location</label><input id="location" maxlength="100" required></div>
+      <div class="small">
         <label>City</label>
         <select id="city" required>
-          <option value="">Select city</option>
-          <option>Chennai</option><option>Bangalore</option><option>Hyderabad</option>
+          <option value="">Select</option><option>Chennai</option><option>Bangalore</option><option>Hyderabad</option>
           <option>Mumbai</option><option>Delhi</option><option>Coimbatore</option>
         </select>
       </div>
     </div>
 
     <div class="row">
-      <div class="col">
-        <label>Technician</label><select id="technician" required></select>
-      </div>
-      <div style="width:140px">
-        <label>Pincode</label><input id="pincode" maxlength="6" pattern="\d{6}" required>
-      </div>
+      <div class="col"><label>Technician</label><select id="technician" required><option>Loading…</option></select></div>
+      <div class="small"><label>Pincode</label><input id="pincode" maxlength="6" required></div>
     </div>
 
     <div class="row">
-      <div style="width:220px">
-        <label>Preferred Date</label><input type="date" id="preferredDate" required>
-      </div>
-      <div class="col">
-        <label>Preferred Time</label><select id="preferredTime" required></select>
-      </div>
+      <div class="small"><label>Preferred Date</label><input type="date" id="prefDate" required></div>
+      <div class="col"><label>Preferred Time</label><select id="prefTime" required></select></div>
     </div>
 
     <div class="row">
       <div class="col">
-        <label>Tests (multi-select)</label><select id="tests" multiple required style="height:120px"></select>
+        <label>Tests (multi)</label>
+        <select id="tests" multiple style="height:120px"></select>
       </div>
       <div class="col">
-        <label>Packages (multi-select)</label><select id="packages" multiple style="height:120px"></select>
+        <label>Packages (multi)</label>
+        <select id="packages" multiple style="height:120px"></select>
       </div>
     </div>
 
     <div class="row">
-      <div class="col">
-        <label>Total Amount</label><input id="totalAmount" readonly>
-      </div>
-      <div style="width:160px">
-        <label>Discount</label><select id="discount" required></select>
-      </div>
+      <div class="col"><label>Total Amount</label><input id="totalAmount" readonly></div>
+      <div class="small"><label>Discount</label><select id="discount" required></select></div>
     </div>
 
     <div class="row">
-      <div class="col">
-        <label>Technician Charge</label><input id="technicianCharge" type="number" min="0" required>
-      </div>
-      <div style="width:220px">
-        <label>Total Payable</label><input id="totalPayable" readonly>
-      </div>
+      <div class="col"><label>Technician Charge</label><input id="techCharge" type="number" min="0" value="0" required></div>
+      <div class="small"><label>Total Payable</label><input id="totalPayable" readonly></div>
     </div>
 
-    <button type="submit" class="submit-btn">Submit</button>
+    <button class="submit" type="submit">Submit Booking</button>
   </form>
 
-  <div class="booking-list" id="bookingList"></div>
+  <div class="list" id="bookingList"></div>
 
 <script>
-/* CONFIG - paste deployed Web App URL here */
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzNy_8NKeFMf5LtOsURSqGPK8t8SV-c4ezXVXsJDTMrV8wXvAL8NPHU_oPkEGFOOih7lA/exec";
+/* ====== CONFIG - paste your deployed Apps Script Web App URL here ====== */
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxRh_dbUi8equeTgJlY1e9klbSxY6F_CvWfjG9UTFBX_D9i-cQwPTXY2Dz2wxKDGVPPDw/exec";
 
-const agentName = localStorage.getItem('agentName');
-if(!agentName){ window.location.href='agent_login.html'; }
-document.getElementById('agentInfo').textContent = `Agent: ${agentName} | ${new Date().toLocaleString()}`;
+/* ====== session agent check ====== */
+const agentName = localStorage.getItem('agentName') || null;
+if(!agentName){ location.href='agent_login.html'; } else {
+  document.getElementById('agentInfo').textContent = `Agent: ${agentName} | ${new Date().toLocaleString()}`;
+}
 
-/* Populate dropdowns */
-async function loadDropdowns(){
+/* ====== populate dropdowns ====== */
+async function loadData(){
   try{
     const res = await fetch(`${WEB_APP_URL}?action=getDropdownData`);
     const data = await res.json();
     // technicians
-    const tech = document.getElementById('technician');
-    tech.innerHTML = '<option value="">--Select Technician--</option>';
-    (data.technicians||[]).forEach(t=>{ const o=new Option(t,t); tech.add(o); });
+    const techSel = document.getElementById('technician');
+    techSel.innerHTML = '<option value="">-- Select Technician --</option>';
+    (data.technicians||[]).forEach(t=> techSel.add(new Option(t,t)));
     // tests
-    const tests = document.getElementById('tests');
-    (data.tests||[]).forEach(t=>{ const o=document.createElement('option'); o.value=`${t.name} (₹${t.cost})`; o.dataset.cost=t.cost; o.textContent=`${t.name} - ₹${t.cost}`; tests.add(o);});
+    const tests = document.getElementById('tests'); tests.innerHTML='';
+    (data.tests||[]).forEach(t=>{
+        const o=document.createElement('option'); o.value = t.name; o.dataset.cost = t.cost; o.textContent = `${t.name} — ₹${t.cost}`; tests.add(o);
+    });
     // packages
-    const pkgs = document.getElementById('packages');
-    (data.packages||[]).forEach(p=>{ const o=document.createElement('option'); o.value=`${p.name} (₹${p.cost})`; o.dataset.cost=p.cost; o.textContent=`${p.name} - ₹${p.cost}`; pkgs.add(o);});
+    const pkgs = document.getElementById('packages'); pkgs.innerHTML='';
+    (data.packages||[]).forEach(p=>{
+      const o=document.createElement('option'); o.value=p.name; o.dataset.cost=p.cost; o.textContent=`${p.name} — ₹${p.cost}`; pkgs.add(o);
+    });
     // discounts
-    const disc = document.getElementById('discount');
-    disc.innerHTML = '<option value="0">0%</option>';
-    (data.discounts||[]).forEach(d=>{ const o=new Option(d,d); disc.add(o);});
-    // time slots
+    const disc = document.getElementById('discount'); disc.innerHTML='';
+    (data.discounts||[]).forEach(d => disc.add(new Option(d, d)));
+    // times
     const times = [
       "6:00 AM - 6:30 AM","6:30 AM - 7:00 AM","7:00 AM - 7:30 AM","7:30 AM - 8:00 AM",
       "8:00 AM - 8:30 AM","8:30 AM - 9:00 AM","9:00 AM - 9:30 AM","9:30 AM - 10:00 AM",
@@ -160,61 +148,51 @@ async function loadDropdowns(){
       "2:00 PM - 2:30 PM","2:30 PM - 3:00 PM","3:00 PM - 3:30 PM","3:30 PM - 4:00 PM",
       "4:00 PM - 4:30 PM","4:30 PM - 5:00 PM","5:00 PM - 5:30 PM","5:30 PM - 6:00 PM"
     ];
-    const tm = document.getElementById('preferredTime');
-    times.forEach(t=>tm.add(new Option(t,t)));
-  }catch(err){
-    console.error('loadDropdowns',err);
-  }
+    const tsel = document.getElementById('prefTime'); tsel.innerHTML='';
+    times.forEach(t=>tsel.add(new Option(t,t)));
+    calculateTotals();
+  }catch(err){ console.error('loadData',err); alert('Failed to load dropdown data'); }
 }
-loadDropdowns();
+loadData();
 
-/* Totals calculation */
+/* ====== calculations ====== */
 function calculateTotals(){
   let total=0;
   Array.from(document.getElementById('tests').selectedOptions).forEach(o=> total += Number(o.dataset.cost||0));
   Array.from(document.getElementById('packages').selectedOptions).forEach(o=> total += Number(o.dataset.cost||0));
   document.getElementById('totalAmount').value = total;
-  const disc = parseFloat(String(document.getElementById('discount').value).replace('%',''))||0;
-  const techCharge = Number(document.getElementById('technicianCharge').value||0);
-  const discounted = total - Math.round((total * disc)/100);
-  const payable = Number(discounted) + Number(techCharge);
+  const discRaw = document.getElementById('discount').value || '0';
+  const discNum = parseFloat(String(discRaw).replace('%','')) || 0;
+  const techCharge = Number(document.getElementById('techCharge').value||0);
+  const discounted = total - Math.round((total * discNum)/100);
+  const payable = discounted + techCharge;
   document.getElementById('totalPayable').value = payable.toFixed(2);
 }
-['tests','packages','discount','technicianCharge'].forEach(id=>{
+['tests','packages','discount','techCharge'].forEach(id=>{
   document.getElementById(id).addEventListener('change', calculateTotals);
   document.getElementById(id).addEventListener('input', calculateTotals);
 });
 
-/* Age calc */
+/* age */
 function calcAge(){
   const v = document.getElementById('dob').value; if(!v) return;
-  const age = (new Date().getFullYear() - new Date(v).getFullYear()) - ((new Date().getMonth()< new Date(v).getMonth() || (new Date().getMonth()=== new Date(v).getMonth() && new Date().getDate()< new Date(v).getDate()))?1:0);
-  document.getElementById('age').value = age>=0?age:0;
+  const dob = new Date(v); const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear(); const m = today.getMonth() - dob.getMonth();
+  if(m<0 || (m===0 && today.getDate()<dob.getDate())) age--;
+  document.getElementById('age').value = age >=0 ? age : 0;
 }
 
-/* Submit booking */
-async function submitBooking(e){
+/* ====== submit booking (GET to match Code.gs) ====== */
+async function onSubmit(e){
   e.preventDefault();
-  // validations (phone must be present from search or entered previously)
-  const phone = document.getElementById('customerNumberSearch').value.trim();
-  if(!/^\d{10}$/.test(phone)){ return alert('Enter a 10-digit phone in the search box first'); }
+  const phone = document.getElementById('phoneSearch').value.trim();
+  if(!/^\d{10}$/.test(phone)){ return alert('Enter a valid 10-digit phone in search field'); }
 
-  // required fields
-  const required = ['customerName','age','gender','address','location','city','technician','pincode','preferredDate','preferredTime','tests','discount','technicianCharge'];
-  for(const id of required){
-    const el = document.getElementById(id);
-    if(!el) continue;
-    if((el.tagName==='SELECT' || el.tagName==='INPUT' || el.tagName==='TEXTAREA') && !el.value){
-      return alert('Please fill ' + id);
-    }
-  }
-
-  // build payload
+  // collect values
   const payload = {
     action: 'createBooking',
-    agentName,
-    customerNumber: phone,
-    customerName: document.getElementById('customerName').value.trim(),
+    phone,
+    name: document.getElementById('custName').value.trim(),
     dob: document.getElementById('dob').value,
     age: document.getElementById('age').value,
     gender: document.getElementById('gender').value,
@@ -223,89 +201,75 @@ async function submitBooking(e){
     city: document.getElementById('city').value,
     technician: document.getElementById('technician').value,
     pincode: document.getElementById('pincode').value,
-    preferredDate: document.getElementById('preferredDate').value,
-    preferredTime: document.getElementById('preferredTime').value,
-    tests: Array.from(document.getElementById('tests').selectedOptions).map(o=>o.value),
-    packages: Array.from(document.getElementById('packages').selectedOptions).map(o=>o.value),
-    totalAmount: Number(document.getElementById('totalAmount').value||0),
+    prefDate: document.getElementById('prefDate').value,
+    prefTime: document.getElementById('prefTime').value,
+    tests: JSON.stringify(Array.from(document.getElementById('tests').selectedOptions).map(o=>o.value)),
+    packages: JSON.stringify(Array.from(document.getElementById('packages').selectedOptions).map(o=>o.value)),
+    totalAmount: document.getElementById('totalAmount').value || 0,
     discount: document.getElementById('discount').value,
-    technicianCharge: Number(document.getElementById('technicianCharge').value||0),
-    totalPayable: Number(document.getElementById('totalPayable').value||0)
+    techCharge: document.getElementById('techCharge').value || 0,
+    finalAmount: document.getElementById('totalPayable').value || 0,
+    agentName
   };
 
+  // build query string
+  const qs = Object.keys(payload).map(k => `${encodeURIComponent(k)}=${encodeURIComponent(payload[k])}`).join('&');
   try{
-    const res = await fetch(WEB_APP_URL, { method:'POST', body: JSON.stringify(payload) });
+    const res = await fetch(`${WEB_APP_URL}?${qs}`);
     const data = await res.json();
-    if(data.success){
-      alert('Booking saved. ID: ' + data.bookingId);
-      document.getElementById('bookingForm').reset();
-      searchBookings(); // refresh
-    } else {
-      alert('Save failed: ' + (data.message || 'unknown'));
-    }
-  }catch(err){ console.error(err); alert('Network error'); }
+    if(data && data.success){ alert('Booking created'); document.getElementById('form').reset(); calculateTotals(); searchByPhone(phone); }
+    else alert('Save failed: ' + (data.message || 'unknown'));
+  }catch(err){ console.error(err); alert('Network or server error'); }
 }
 
-/* Search bookings by phone and render */
+/* ====== search bookings by phone ====== */
 async function onPhoneSearch(){
-  const phone = document.getElementById('customerNumberSearch').value.trim();
-  if(!/^\d{10}$/.test(phone)) return alert('Enter valid 10-digit phone');
-  await searchBookings();
+  const phone = document.getElementById('phoneSearch').value.trim();
+  if(!/^\d{10}$/.test(phone)) return alert('Enter 10-digit phone');
+  searchByPhone(phone);
 }
-async function searchBookings(){
-  const phone = document.getElementById('customerNumberSearch').value.trim();
-  if(!/^\d{10}$/.test(phone)) return alert('Enter valid 10-digit phone');
+
+async function searchByPhone(phone){
   try{
     const res = await fetch(`${WEB_APP_URL}?action=getBookingsByPhone&phone=${encodeURIComponent(phone)}`);
     const data = await res.json();
-    renderBookings(data||[]);
-    // if there is a latest booking, prefill some fields (optional)
-    if(data && data.length>0){
-      const latest = data[0];
-      // prefill summary fields: name, city, technician, preferred date/time (not overwriting address etc)
-      document.getElementById('customerName').value = latest.customerName || '';
-      document.getElementById('city').value = latest.city || '';
-      // other prefill if you want
-    }
+    renderList(data || []);
   }catch(err){ console.error(err); alert('Failed to fetch bookings'); }
 }
 
-function renderBookings(list){
-  const container = document.getElementById('bookingList');
-  container.innerHTML = '';
-  if(!list || list.length===0){ container.innerHTML = '<div style="color:#333">No bookings found</div>'; return; }
+function renderList(list){
+  const container = document.getElementById('bookingList'); container.innerHTML='';
+  if(!list.length){ container.innerHTML = '<div style="color:#333">No bookings found</div>'; return; }
   list.forEach(b=>{
     const div = document.createElement('div');
-    div.className = 'booking-card ' + (b.status==='Cancelled'?'cancelled':(b.status==='Report Generated'?'reported':'confirmed'));
+    const cls = b.status==='Cancelled' ? 'cancelled' : (b.status==='Report Generated' ? 'reported' : 'confirmed');
+    div.className = `card ${cls}`;
     div.innerHTML = `
-      <div style="font-weight:700">${b.customerName} — ${b.customerNumber || ''}</div>
+      <div style="font-weight:700">${b.name} — ${b.phone||''}</div>
       <div style="font-size:13px">City: ${b.city} | Technician: ${b.technician}</div>
-      <div style="font-size:13px">${b.preferredDate} | ${b.preferredTime}</div>
-      <div style="margin-top:8px">Total: ₹${b.totalPayable} — Status: ${b.status}</div>
+      <div style="font-size:13px">${b.date} | ${b.time}</div>
+      <div style="margin-top:8px">Status: <strong>${b.status}</strong></div>
       <div style="margin-top:8px">
-        <button class="action-btn" onclick="modifyBooking('${b.bookingId}')">Modify</button>
-        <button class="action-btn" onclick="changeStatus('${b.bookingId}','Report Generated')">Report Generated</button>
-        <button class="action-btn" onclick="changeStatus('${b.bookingId}','Cancelled')">Cancel</button>
+        <button class="action" onclick="modifyBooking('${b.phone}','${b.date}','${b.time}')">Modify</button>
+        <button class="action" onclick="updateStatus('${b.phone}','${b.date}','${b.time}','Report Generated')">Report Generated</button>
+        <button class="action" onclick="updateStatus('${b.phone}','${b.date}','${b.time}','Cancelled')">Cancel</button>
       </div>`;
     container.appendChild(div);
   });
 }
 
-/* status change */
-async function changeStatus(id,status){
+/* ====== update status (phone,date,time,status) ====== */
+async function updateStatus(phone,date,time,status){
   try{
-    await fetch(`${WEB_APP_URL}?action=updateStatus&id=${encodeURIComponent(id)}&status=${encodeURIComponent(status)}`);
-    searchBookings();
-  }catch(e){ console.error(e); alert('Status update failed'); }
+    await fetch(`${WEB_APP_URL}?action=updateStatus&phone=${encodeURIComponent(phone)}&date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}&status=${encodeURIComponent(status)}`);
+    searchByPhone(phone);
+  }catch(e){ console.error(e); alert('Failed to update status'); }
 }
 
-/* modify booking - simplistic: fetch booking by phone and fill form for editing is possible.
-   Full edit/save flow requires an 'updateBooking' endpoint; not implemented here.
-*/
-function modifyBooking(id){
-  alert('Modify booking: ' + id + '\nOpen existing booking in edit mode (not implemented full update flow in this version).');
+/* ====== modify (simple: alert + eventual implementation) ====== */
+function modifyBooking(phone,date,time){
+  alert('To modify: load the booking into the form and implement update logic. Current backend only sets status. \n\nPhone: '+phone+'\nDate: '+date+'\nTime: '+time);
 }
-
 </script>
 </body>
 </html>

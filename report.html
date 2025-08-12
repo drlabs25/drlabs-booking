@@ -1,59 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8" />
 <title>Reports - Dr. Labs</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <style>
-  body{font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,lightblue,lightgreen);padding:20px;margin:0}
+  body{font-family:Arial,Helvetica,sans-serif;margin:0;padding:20px;background:linear-gradient(135deg,lightblue,lightgreen)}
   h1{margin:0 0 12px}
   .filters{background:#fff;padding:12px;border-radius:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-  .filters input,.filters select{padding:6px;border:1px solid #ccc;border-radius:6px}
+  input,select{padding:6px;border-radius:6px;border:1px solid #ccc}
   .btn{padding:8px 12px;border-radius:6px;border:0;color:#fff;cursor:pointer}
-  .btn-search{background:#007bff}
-  .btn-csv{background:green}
-  .btn-back{background:gray}
-  table{width:100%;border-collapse:collapse;margin-top:12px;background:#fff;border-radius:6px;overflow:hidden}
-  th,td{padding:8px;border:1px solid #eaeaea;text-align:left;font-size:13px}
+  .search{background:#007bff}.csv{background:green}.back{background:gray}
+  table{width:100%;border-collapse:collapse;margin-top:12px;background:#fff}
+  th,td{padding:8px;border:1px solid #eee;text-align:left}
   th{background:#007bff;color:#fff}
-  .status-confirmed{background:#e6f7ea}
-  .status-cancelled{background:#fbe9e9}
-  .status-reported{background:#e7f0ff}
 </style>
 </head>
 <body>
   <h1>Booking Reports</h1>
 
   <div class="filters">
-    <label>From <input type="date" id="fromDate"></label>
-    <label>To <input type="date" id="toDate"></label>
+    <label>From <input type="date" id="from"></label>
+    <label>To <input type="date" id="to"></label>
     <input id="city" placeholder="City">
     <input id="technician" placeholder="Technician">
     <input id="agent" placeholder="Agent">
-    <select id="status"><option value="">All Status</option><option>Confirmed</option><option>Cancelled</option><option>Report Generated</option></select>
+    <select id="status"><option value="">All</option><option>Confirmed</option><option>Cancelled</option><option>Report Generated</option></select>
     <input id="phone" placeholder="Phone">
-    <button class="btn btn-search" onclick="fetchReports()">Search</button>
-    <button class="btn btn-csv" onclick="downloadCSV()">Download CSV</button>
-    <button class="btn btn-back" onclick="location.href='index.html'">⬅ Back</button>
+    <button class="btn search" onclick="fetchReports()">Search</button>
+    <button class="btn csv" onclick="downloadCSV()">Download CSV</button>
+    <button class="btn back" onclick="location.href='index.html'">⬅ Back</button>
   </div>
 
-  <table id="reportTable">
+  <table id="tbl">
     <thead>
       <tr>
-        <th>Customer Number</th><th>Customer Name</th><th>Location</th><th>Preferred Date</th>
-        <th>Preferred Time</th><th>Agent</th><th>Technician</th><th>Status</th><th>Total Payable</th>
+        <th>Customer Number</th><th>Customer Name</th><th>Location</th><th>Preferred Date</th><th>Preferred Time</th>
+        <th>Agent</th><th>Technician</th><th>Status</th><th>Total Payable</th>
       </tr>
     </thead>
     <tbody></tbody>
   </table>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzNy_8NKeFMf5LtOsURSqGPK8t8SV-c4ezXVXsJDTMrV8wXvAL8NPHU_oPkEGFOOih7lA/exec"; // paste web app url
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxRh_dbUi8equeTgJlY1e9klbSxY6F_CvWfjG9UTFBX_D9i-cQwPTXY2Dz2wxKDGVPPDw/exec"; // paste your Web App URL
 
 async function fetchReports(){
   const params = new URLSearchParams({
     action: 'getReports',
-    from: document.getElementById('fromDate').value || '',
-    to: document.getElementById('toDate').value || '',
+    startDate: document.getElementById('from').value || '',
+    endDate: document.getElementById('to').value || '',
     city: document.getElementById('city').value.trim(),
     technician: document.getElementById('technician').value.trim(),
     agent: document.getElementById('agent').value.trim(),
@@ -63,43 +59,41 @@ async function fetchReports(){
   try{
     const res = await fetch(`${WEB_APP_URL}?${params.toString()}`);
     const data = await res.json();
-    renderTable(data || []);
-  }catch(err){ console.error(err); alert('Failed to load reports'); }
+    render(data || []);
+  }catch(err){ console.error(err); alert('Failed to fetch reports'); }
 }
 
-function renderTable(rows){
-  const tbody = document.querySelector('#reportTable tbody');
-  tbody.innerHTML = '';
-  if(!rows || rows.length===0){ tbody.innerHTML='<tr><td colspan="9" style="text-align:center">No results</td></tr>'; return; }
+function render(rows){
+  const tbody = document.querySelector('#tbl tbody'); tbody.innerHTML='';
+  if(!rows.length){ tbody.innerHTML='<tr><td colspan="9" style="text-align:center">No results</td></tr>'; return; }
   rows.forEach(r=>{
     const tr = document.createElement('tr');
-    const statusClass = r.status === 'Cancelled' ? 'status-cancelled' : (r.status === 'Report Generated' ? 'status-reported' : 'status-confirmed');
-    tr.className = statusClass;
     tr.innerHTML = [
-      r.customerNumber || '', r.customerName || '', r.location || '', r.preferredDate || '',
-      r.preferredTime || '', r.agentName || '', r.technician || '', r.status || '', r.totalPayable || ''
+      r.phone || r.customerNumber || '',
+      r.name || r.customerName || '',
+      r.location || '',
+      r.date || r.preferredDate || '',
+      r.time || r.preferredTime || '',
+      r.agent || r.agentName || '',
+      r.technician || '',
+      r.status || '',
+      r.total || r.totalPayable || ''
     ].map(v=>`<td>${v}</td>`).join('');
     tbody.appendChild(tr);
   });
 }
 
-/* Download currently shown table as CSV */
+/* download visible table as CSV */
 function downloadCSV(){
-  const rows = Array.from(document.querySelectorAll('#reportTable tr'));
-  if(rows.length<=1) return alert('No data to download');
+  const rows = Array.from(document.querySelectorAll('#tbl tr'));
+  if(rows.length<=1) return alert('No data');
   const csv = rows.map(r=>{
-    const cols = Array.from(r.querySelectorAll('th,td')).map(c => `"${String(c.innerText).replace(/"/g,'""')}"`);
-    return cols.join(',');
+    return Array.from(r.querySelectorAll('th,td')).map(c => `"${String(c.innerText).replace(/"/g,'""')}"`).join(',');
   }).join('\n');
-  const blob = new Blob([csv],{type:'text/csv'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `report-${(new Date()).toISOString().slice(0,10)}.csv`;
+  const blob = new Blob([csv],{type:'text/csv'}); const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = `report-${new Date().toISOString().slice(0,10)}.csv`;
   document.body.appendChild(a); a.click(); a.remove();
 }
-
-/* auto fetch today's data on load (optional) */
-// fetchReports();
 </script>
 </body>
 </html>
