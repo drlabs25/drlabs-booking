@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Create Technician Details - Dr. Labs</title>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(to bottom right, lightblue, lightgreen);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    .form-box {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        width: 350px;
+        text-align: center;
+    }
+    input {
+        width: 90%;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+    button {
+        padding: 10px 20px;
+        font-size: 1em;
+        background: #007BFF;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    button:hover {
+        background: #0056b3;
+    }
+    .list {
+        margin-top: 20px;
+        text-align: left;
+    }
+    .toggle {
+        padding: 5px 10px;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+        background: #28a745;
+        color: white;
+    }
+    .inactive {
+        background: #dc3545;
+    }
+</style>
+</head>
+<body>
+<div class="form-box">
+    <h2>Create Technician Details</h2>
+    <input type="text" id="techName" placeholder="Technician Name">
+    <input type="text" id="empId" placeholder="Employee ID">
+    <input type="text" id="location" placeholder="Location">
+    <button onclick="createTech()">Submit</button>
+
+    <div class="list" id="techList"></div>
+</div>
+
+<script>
+    let technicians = [];
+
+    function createTech() {
+        const name = document.getElementById('techName').value;
+        const empId = document.getElementById('empId').value;
+        const location = document.getElementById('location').value;
+        if (!name || !empId || !location) {
+            alert("Please fill in all fields");
+            return;
+        }
+        technicians.push({name, empId, location, active: true});
+        renderList();
+        document.getElementById('techName').value = '';
+        document.getElementById('empId').value = '';
+        document.getElementById('location').value = '';
+    }
+
+    function toggleStatus(index) {
+        technicians[index].active = !technicians[index].active;
+        renderList();
+    }
+
+    function renderList() {
+        const listDiv = document.getElementById('techList');
+        listDiv.innerHTML = '';
+        technicians.forEach((tech, index) => {
+            listDiv.innerHTML += `
+                <div>
+                    ${tech.name} (${tech.empId}) - ${tech.location} - ${tech.active ? 'Active' : 'Inactive'}
+                    <button class="toggle ${!tech.active ? 'inactive' : ''}" onclick="toggleStatus(${index})">
+                        ${tech.active ? 'Deactivate' : 'Activate'}
+                    </button>
+                </div>
+            `;
+        });
+    }
+</script>
+</body>
+</html>

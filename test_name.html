@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Test Name - Dr. Labs</title>
+<style>
+    body { margin: 0; font-family: Arial, sans-serif; background: linear-gradient(to bottom right, lightblue, lightgreen); text-align: center; padding: 20px; }
+    .form-box { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); display: inline-block; }
+    input { margin: 5px; padding: 8px; border-radius: 5px; border: 1px solid #ccc; }
+    button { padding: 10px 20px; margin-top: 10px; border: none; border-radius: 5px; background: #007BFF; color: white; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    table { margin-top: 20px; width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ccc; padding: 8px; }
+</style>
+</head>
+<body>
+<h2>Add Test Name</h2>
+<div class="form-box">
+    <input type="text" id="testName" placeholder="Test Name">
+    <input type="number" id="cost" placeholder="Cost">
+    <input type="text" id="code" placeholder="Code">
+    <br>
+    <button onclick="addTest()">Submit</button>
+    <br><br>
+    <input type="file" id="csvFile" accept=".csv">
+    <button onclick="uploadCSV()">Upload CSV</button>
+</div>
+
+<table id="testTable">
+    <tr><th>Test Name</th><th>Cost</th><th>Code</th></tr>
+</table>
+
+<script>
+let tests = [];
+
+function addTest() {
+    const name = document.getElementById('testName').value;
+    const cost = document.getElementById('cost').value;
+    const code = document.getElementById('code').value;
+    if (!name || !cost || !code) { alert("Fill all fields"); return; }
+    tests.push({name, cost, code});
+    renderTable();
+}
+
+function renderTable() {
+    const table = document.getElementById('testTable');
+    table.innerHTML = '<tr><th>Test Name</th><th>Cost</th><th>Code</th></tr>';
+    tests.forEach(t => {
+        table.innerHTML += `<tr><td>${t.name}</td><td>${t.cost}</td><td>${t.code}</td></tr>`;
+    });
+}
+
+function uploadCSV() {
+    const file = document.getElementById('csvFile').files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const rows = e.target.result.split("\n");
+        rows.forEach(row => {
+            const [name, cost, code] = row.split(",");
+            if (name && cost && code) {
+                tests.push({name: name.trim(), cost: cost.trim(), code: code.trim()});
+            }
+        });
+        renderTable();
+    };
+    reader.readAsText(file);
+}
+</script>
+</body>
+</html>

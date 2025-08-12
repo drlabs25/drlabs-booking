@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - Dr. Labs</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom right, lightblue, lightgreen);
+            text-align: center;
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 30px;
+        }
+        button {
+            display: block;
+            width: 300px;
+            margin: 15px auto;
+            padding: 15px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Admin Dashboard</h1>
+    <button onclick="location.href='create_agent.html'">1. Create Agent Credential</button>
+    <button onclick="location.href='create_technician.html'">2. Create Technician Details</button>
+    <button onclick="location.href='test_name.html'">3. Test Name</button>
+    <button onclick="location.href='package_name.html'">4. Package Name</button>
+    <button onclick="location.href='create_discount.html'">5. Create Discount</button>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Create Discount - Dr. Labs</title>
+<style>
+    body { margin: 0; font-family: Arial, sans-serif; background: linear-gradient(to bottom right, lightblue, lightgreen); text-align: center; padding: 20px; }
+    .form-box { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); display: inline-block; }
+    input { margin: 5px; padding: 8px; border-radius: 5px; border: 1px solid #ccc; }
+    button { padding: 10px 20px; margin-top: 10px; border: none; border-radius: 5px; background: #007BFF; color: white; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    ul { margin-top: 20px; list-style: none; padding: 0; }
+    li { padding: 5px; }
+</style>
+</head>
+<body>
+<h2>Create Discount</h2>
+<div class="form-box">
+    <input type="text" id="discount" placeholder="Discount (e.g., 10%)">
+    <br>
+    <button onclick="addDiscount()">Submit</button>
+</div>
+
+<ul id="discountList"></ul>
+
+<script>
+let discounts = [];
+
+function addDiscount() {
+    const discount = document.getElementById('discount').value;
+    if (!discount) { alert("Enter discount value"); return; }
+    discounts.push(discount);
+    renderList();
+    document.getElementById('discount').value = '';
+}
+
+function renderList() {
+    const list = document.getElementById('discountList');
+    list.innerHTML = '';
+    discounts.forEach(d => {
+        list.innerHTML += `<li>${d}</li>`;
+    });
+}
+</script>
+</body>
+</html>

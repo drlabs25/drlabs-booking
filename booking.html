@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Booking - Dr. Labs Booking Portal</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root{
+    --primary:#007BFF; --primary-dark:#0056b3;
+    --green:#28a745; --red:#dc3545; --blue:#007bff;
+    --bg1:lightblue; --bg2:lightgreen;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:Arial, Helvetica, sans-serif;
+    background: linear-gradient(135deg,var(--bg1),var(--bg2));
+    color:#222;
+  }
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 18px; background: rgba(255,255,255,0.95);
+    box-shadow:0 2px 6px rgba(0,0,0,0.08);
+  }
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand img{height:48px}
+  .agent-info{text-align:right;min-width:220px}
+  .agent-info .user{font-weight:700}
+  main{padding:16px; display:flex; gap:16px; flex-wrap:wrap}
+  .panel{background:white;border-radius:10px;padding:14px;box-shadow:0 6px 18px rgba(0,0,0,0.08)}
+  .left{flex:1 1 600px; min-width:300px}
+  .right{width:380px; max-width:100%}
+  label{display:block;margin-top:10px;font-size:13px}
+  input, select, textarea{width:100%; padding:8px; border-radius:6px; border:1px solid #ccc; margin-top:6px}
+  .row{display:flex; gap:10px; align-items:center}
+  .col{flex:1}
+  .small{width:140px}
+  button{margin-top:10px;padding:9px 12px;border-radius:8px;border:none;cursor:pointer;background:var(--primary);color:white;font-weight:700}
+  button.secondary{background:#6c757d}
+  button.ghost{background:transparent;color:var(--primary);border:1px solid var(--primary)}
+  .muted{color:#666;font-size:13px}
+  .chip{display:inline-block;padding:6px 8px;border-radius:16px;background:#f1f1f1;margin:4px;font-size:13px}
+  .chip .x{margin-left:8px;cursor:pointer;color:#900}
+  .summary-card{padding:10px;border-radius:8px;margin-bottom:8px;color:white}
+  .status-confirmed{background:var(--green)}
+  .status-canceled{background:var(--red)}
+  .status-report{background:var(--blue)}
+  .bookings-list{max-height:520px; overflow:auto; padding-top:8px}
+  .small-muted{font-size:12px;color:#666}
+  .notice{color:#a00;font-weight:700;margin-top:8px}
+  .error-box{background:#fff1f0;border:1px solid #f5c6cb;padding:8px;border-radius:6px;color:#721c24;margin-top:8px}
+  @media (max-width:900px){ main{flex-direction:column} .right{order:-1} }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img src="dr_labs_logo.png" alt="Dr Labs Logo" onerror="this.style.display='none'">
+    <div>
+      <div style="font-weight:800">Dr. Labs Booking Portal</div>
+      <div class="muted">Agent Booking</div>
+    </div>
+  </div>
+  <div class="agent-info">
+    <div>Logged in: <span class="user" id="agentUserDisplay">--</span></div>
+    <div class="muted" id="nowDisplay">--</div>
+  </div>
+</header>
+
+<main>
+  <!-- LEFT: Phone search + Booking form -->
+  <section class="panel left">
+    <label>Customer Number (10 digits)</label>
+    <div class="row">
+      <input type="text" id="customerPhone" maxlength="10" placeholder="e.g. 9876543210">
+      <button onclick="onPhoneSearch()">Search</button>
+    </div>
+    <div id="phoneResult" style="margin-top:12px"></div>
+
+    <div id="errorBox" class="error-box" style="display:none"></div>
+
+    <!-- Booking Form (hidden until create or modify) -->
+    <form id="bookingForm" style="display:none; margin-top:12px" onsubmit="event.preventDefault(); onSubmitBooking()">
+      <h3>Customer Details</h3>
+
+      <div class="row">
+        <div class="col">
+          <label>Customer Name (alpha only)</label>
+          <input type="text" id="customerName" placeholder="Full name">
+        </div>
+        <div class="col small">
+          <label>Date of Birth</label>
+          <input type="date" id="dob">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col small">
+          <label>Age</label>
+          <input type="number" id="age" min="0" placeholder="Age">
+        </div>
+        <div class="col">
+          <label>Gender</label>
+          <select id="gender">
+            <option value="">Select gender</option>
+            <option>Male</option>
+            <option>Female</option>
+          </select>
+        </div>
+      </div>
+
+      <label>Address (alphanumeric, max 500 chars)</label>
+      <textarea id="address" rows="3" maxlength="500" placeholder="Address"></textarea>
+
+      <div class="row">
+        <div class="col">
+          <label>Location (max 100 chars)</label>
+          <input type="text" id="location" maxlength="100">
+        </div>
+        <div class="col small">
+          <label>City</label>
+          <select id="city">
+            <option value="">Select city</option>
+            <option>Chennai</option>
+            <option>Bangalore</option>
+            <option>Hyderabad</option>
+            <option>Mumbai</option>
+            <option>Delhi</option>
+            <option>Coimbatore</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <label>Technician</label>
+          <select id="technician">
+            <option value="">-- Technician list (empty) --</option>
+          </select>
+        </div>
+        <div class="col small">
+          <label>Pincode (6 digits)</label>
+          <input type="text" id="pincode" maxlength="6" placeholder="600001">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col small">
+          <label>Preferred Date</label>
+          <input type="date" id="prefDate">
+        </div>
+        <div class="col">
+          <label>Preferred Time</label>
+          <select id="prefTime"></select>
+        </div>
+      </div>
+
+      <hr style="margin:12px 0">
+
+      <h3>Tests & Packages</h3>
+      <div style="display:flex; gap:12px; align-items:flex-start;">
+        <div style="flex:1">
+          <label>Search Tests</label>
+          <input type="text" id="searchTests" placeholder="Type to filter..." oninput="renderTestsList()">
+          <div id="testsList" style="margin-top:8px; max-height:160px; overflow:auto; border:1px solid #f0f0f0; padding:6px"></div>
+        </div>
+
+        <div style="flex:1">
+          <label>Search Packages</label>
+          <input type="text" id="searchPackages" placeholder="Type to filter..." oninput="renderPackagesList()">
+          <div id="packagesList" style="margin-top:8px; max-height:160px; overflow:auto; border:1px solid #f0f0f0; padding:6px"></div>
+        </div>
+      </div>
+
+      <div style="margin-top:10px">
+        <div><strong>Selected Tests</strong></div>
+        <div id="selectedTests" style="margin-top:6px"></div>
+        <div style="margin-top:10px"><strong>Selected Packages</strong></div>
+        <div id="selectedPackages" style="margin-top:6px"></div>
+      </div>
+
+      <div style="margin-top:10px">
+        <label>Discount</label>
+        <select id="discountSelect">
+          <option value="0">-- No discounts loaded --</option>
+        </select>
+      </div>
+
+      <div class="row">
+        <div class="col small">
+          <label>Technician Charge</label>
+          <input type="number" id="techCharge" min="0" placeholder="0">
+        </div>
+        <div class="col">
+          <label>&nbsp;</label>
+          <div style="display:flex; gap:8px;">
+            <button type="button" onclick="calculateTotals()">Calculate</button>
+            <button type="button" class="ghost" onclick="previewTotals()">Preview</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="background:#fafafa;margin-top:12px">
+        <div>Tests Total: <span id="testsTotal">₹ 0</span></div>
+        <div>Packages Total: <span id="packagesTotal">₹ 0</span></div>
+        <div>Discount Amount: <span id="discountAmount">₹ 0</span></div>
+        <div>Technician Charge: <span id="techChargeDisplay">₹ 0</span></div>
+        <div style="font-weight:800; margin-top:8px">Total Amount to be Paid: <span id="totalPayable">₹ 0</span></div>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:12px;">
+        <button type="submit" id="submitBtn">Submit</button>
+        <button type="button" class="secondary" onclick="enableBranchMode()">Branch Booking</button>
+        <button type="button" class="ghost" onclick="resetAll()">Reset</button>
+      </div>
+
+      <div id="formNotice" class="notice" style="display:none"></div>
+    </form>
+  </section>
+
+  <!-- RIGHT: Summary & Bookings -->
+  <aside class="panel right">
+    <h3>Booking Summary / History</h3>
+    <div id="singleBookingBox" style="margin-bottom:12px"></div>
+
+    <h4 style="margin-top:8px">All Bookings (sorted)</h4>
+    <div class="bookings-list" id="bookingsList"></div>
+  </aside>
+</main>
+
+<script>
+/* ============================
+   CONFIG: your Apps Script Web App URL
+   ============================ */
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwPDGok8P-sEPkSItAfSJl1lSqAvlUO-ClC6M6DEoHaushuUx4bB565jzv7QCMntkkbOA/exec';
+
+/* ============================
+   Local arrays (start empty; will be populated from sheet)
+   ============================ */
+const TECHNICIANS = [];
+const TESTS = [];
+const PACKAGES = [];
+const DISCOUNTS = [];
+
+let bookings = [];
+let selectedTests = [];
+let selectedPackages = [];
+let currentEditId = null;
+let branchMode = false;
+let lockedBranchFields = {};
+
+function $(id){ return document.getElementById(id); }
+
+/* ============================
+   Initialization
+   ============================ */
+async function init(){
+  try {
+    let agent = prompt('Enter agent username for session:','agent1') || 'agent1';
+    $('agentUserDisplay').textContent = agent;
+    updateNow();
+    setInterval(updateNow, 1000);
+
+    populateTimeSlots();
+    await fetchListsFromSheet();
+    renderTestsList();
+    renderPackagesList();
+    populateTechAndDiscounts();
+    refreshBookingsUI();
+  } catch (err) {
+    console.error('init error', err);
+    showError('Initialization failed: ' + (err.message || err));
+  }
+}
+function updateNow(){ $('nowDisplay').textContent = new Date().toLocaleString(); }
+
+function showError(msg){
+  const box = $('errorBox');
+  box.style.display = 'block';
+  box.textContent = msg;
+}
+
+/* ============================
+   Apps Script integration helpers
+   ============================ */
+async function fetchListsFromSheet(){
+  try {
+    const resp = await fetch(WEB_APP_URL + '?action=lists');
+    const data = await resp.json();
+    if (!data.success) {
+      console.warn('Lists endpoint returned no success:', data);
+      return;
+    }
+    TECHNICIANS.length = 0; TESTS.length = 0; PACKAGES.length = 0; DISCOUNTS.length = 0;
+    (data.technicians || []).forEach(t => TECHNICIANS.push({ name: t.Name || t.name || '', empId: t.EmployeeID || t.id || '', location: t.Location || '' }));
+    (data.tests || []).forEach(t => TESTS.push({ name: t.Name || t.name || '', code: t.Code || t.code || '', cost: Number(t.Cost || t.cost || 0) }));
+    (data.packages || []).forEach(p => PACKAGES.push({ name: p.Name || p.name || '', code: p.Code || p.code || '', cost: Number(p.Cost || p.cost || 0) }));
+    (data.discounts || []).forEach(d => DISCOUNTS.push(Number(d)));
+    populateTechAndDiscounts();
+    renderTestsList();
+    renderPackagesList();
+  } catch (err) {
+    console.error('fetchListsFromSheet error', err);
+    showError('Failed to load admin lists from Google Sheets. Check WEB_APP_URL and deploy permissions.');
+  }
+}
+
+async function saveBookingToSheet(bookingObj){
+  const payload = { action: 'saveBooking', booking: bookingObj };
+  const resp = await fetch(WEB_APP_URL, {
+    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
+  });
+  const data = await resp.json();
+  if (!data.success) throw new Error(data.error || 'Create failed');
+  return data;
+}
+
+async function updateBookingInSheet(bookingObj){
+  const payload = { action: 'updateBooking', booking: bookingObj };
+  const resp = await fetch(WEB_APP_URL, {
+    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
+  });
+  const data = await resp.json();
+  if (!data.success) throw new Error(data.error || 'Update failed');
+  return data;
+}
+
+async function changeBookingStatusInSheet(id, status){
+  const payload = { action: 'updateBookingStatus', id: id, status: status };
+  const resp = await fetch(WEB_APP_URL, {
+    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
+  });
+  const data = await resp.json();
+  if (!data.success) throw new Error(data.error || 'Status change failed');
+  return data;
+}
+
+/* ============================
+   Phone search flow (fetch bookings for phone from sheet)
+   ============================ */
+async function onPhoneSearch(){
+  const phone = $('customerPhone').value.trim();
+  if (!/^\d{10}$/.test(phone)){ alert('Enter valid 10-digit phone number.'); return; }
+  try {
+    const resp = await fetch(WEB_APP_URL + '?action=bookings&phone=' + encodeURIComponent(phone));
+    const data = await resp.json();
+    if (!data.success) {
+      showPhoneSearchResults(Array.isArray(data) ? data : []);
+      return;
+    }
+    const founds = data.bookings || [];
+    showPhoneSearchResults(founds);
+  } catch (err) {
+    console.error('onPhoneSearch error', err);
+    showError('Failed to fetch bookings for this phone: ' + (err.message || err));
+  }
+}
+
+function showPhoneSearchResults(founds){
+  if (!founds || founds.length === 0){
+    $('phoneResult').innerHTML = `<div><button onclick="startNewBooking()">Create Booking</button></div>`;
+    $('singleBookingBox').innerHTML = '';
+    return;
+  }
+  founds.sort((a,b)=>{
+    const ta = new Date(a.CreatedAt || a.createdAt || a.Created || 0);
+    const tb = new Date(b.CreatedAt || b.createdAt || b.Created || 0);
+    return tb - ta;
+  });
+  const latest = founds[0];
+  const mapped = mapSheetRowToBooking(latest);
+  const idx = bookings.findIndex(b => b.id === mapped.id);
+  if (idx >= 0) bookings[idx] = mapped; else bookings.push(mapped);
+  renderSingleBookingBox(mapped);
+  refreshBookingsUI();
+}
+
+function mapSheetRowToBooking(row){
+  if (Array.isArray(row)){
+    const [
+      ID, Phone, Name, DOB, Age, Gender, Address, Location, City, Technician,
+      Pincode, PrefDate, PrefTime, TestsJSON, PackagesJSON, DiscountPercent,
+      DiscountAmount, TechnicianCharge, TotalPayable, CreatedBy, CreatedAt, Status, StatusUpdatedAt
+    ] = row;
+    return {
+      id: ID, phone: Phone, name: Name, dob: DOB, age: Age, gender: Gender,
+      address: Address, location: Location, city: City, technician: Technician,
+      pincode: Pincode, prefDate: PrefDate, prefTime: PrefTime,
+      tests: tryParseJSON(TestsJSON), packages: tryParseJSON(PackagesJSON),
+      discountPercent: Number(DiscountPercent || 0), discountAmount: Number(DiscountAmount || 0),
+      technicianCharge: Number(TechnicianCharge || 0), totalPayable: Number(TotalPayable || 0),
+      createdBy: CreatedBy, createdAt: CreatedAt, status: Status || 'Confirmed'
+    };
+  } else {
+    return {
+      id: row.ID || row.Id || row.id,
+      phone: row.Phone || row.phone,
+      name: row.Name || row.name,
+      dob: row.DOB || row.dob,
+      age: row.Age || row.age,
+      gender: row.Gender || row.gender,
+      address: row.Address || row.address,
+      location: row.Location || row.location,
+      city: row.City || row.city,
+      technician: row.Technician || row.technician,
+      pincode: row.Pincode || row.pincode,
+      prefDate: row.PrefDate || row.prefDate,
+      prefTime: row.PrefTime || row.prefTime,
+      tests: tryParseJSON(row.TestsJSON || row.tests || '[]'),
+      packages: tryParseJSON(row.PackagesJSON || row.packages || '[]'),
+      discountPercent: Number(row.DiscountPercent || row.discountPercent || 0),
+      discountAmount: Number(row.DiscountAmount || row.discountAmount || 0),
+      technicianCharge: Number(row.TechnicianCharge || row.technicianCharge || 0),
+      totalPayable: Number(row.TotalPayable || row.totalPayable || 0),
+      createdBy: row.CreatedBy || row.createdBy,
+      createdAt: row.CreatedAt || row.createdAt,
+      status: row.Status || row.status || 'Confirmed'
+    };
+  }
+}
+
+function tryParseJSON(s){
+  try { return typeof s === 'string' ? JSON.parse(s) : (s || []); } catch(e){ return []; }
+}
+
+/* render single booking compact box with action buttons */
+function renderSingleBookingBox(b){
+  const cont = $('singleBookingBox');
+  const status = b.status || b.Status || 'Confirmed';
+  const statusClass = status === 'Canceled' ? 'status-canceled' : (status === 'Report Generated' ? 'status-report' : 'status-confirmed');
+  cont.innerHTML = `
+    <div class="summary-card ${statusClass}">
+      <div><strong>${escapeHtml(b.name || b.Name || '(No name)')}</strong> — ${escapeHtml(b.phone || b.Phone)}</div>
+      <div class="small-muted">City: ${escapeHtml(b.city || b.City || '-')}</div>
+      <div class="small-muted">Technician: ${escapeHtml(b.technician || b.Technician || '-')}</div>
+      <div class="small-muted">${escapeHtml(b.prefDate || b.PrefDate || '-')} | ${escapeHtml(b.prefTime || b.PrefTime || '-')}</div>
+      <div style="margin-top:8px">Status: <strong>${escapeHtml(status)}</strong></div>
+      <div style="margin-top:8px">
+        <button onclick="onModify('${b.id || b.ID}')">📝 Modify</button>
+        <button onclick="onReportGenerated('${b.id || b.ID}')">📄 Report Generated</button>
+        <button onclick="onCancel('${b.id || b.ID}')" style="background:var(--red)">❌ Cancel</button>
+      </div>
+    </div>
+  `;
+  if (status === 'Canceled'){
+    cont.innerHTML += `<div style="margin-top:8px"><button onclick="startNewBooking()">Create Booking</button></div>`;
+  }
+}
+
+function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ============================
+   Start new booking for phone
+   ============================ */
+function startNewBooking(){
+  const phone = $('customerPhone').value.trim();
+  if (!/^\d{10}$/.test(phone)) return alert('Enter valid 10-digit phone first');
+  currentEditId = null;
+  $('bookingForm').style.display = 'block';
+  if (!branchMode){
+    resetFormFields();
+  } else {
+    clearCustomerSpecificFields();
+    lockBranchFields(true);
+  }
+  updateMiniSummary();
+}
+
+/* ============================
+   Modify booking: load values into form
+   ============================ */
+function onModify(id){
+  const found = bookings.find(b => (b.id === id || b.ID === id));
+  if (!found) return alert('Booking not found locally. Try searching phone first.');
+  currentEditId = found.id || found.ID;
+  $('bookingForm').style.display = 'block';
+  $('customerPhone').value = found.phone || found.Phone || '';
+  $('customerName').value = found.name || found.Name || '';
+  $('dob').value = found.dob || found.DOB || '';
+  $('age').value = found.age || found.Age || '';
+  $('gender').value = found.gender || found.Gender || '';
+  $('address').value = found.address || found.Address || '';
+  $('location').value = found.location || found.Location || '';
+  setSelectValue('city', found.city || found.City || '');
+  setSelectValue('technician', found.technician || found.Technician || '');
+  $('pincode').value = found.pincode || found.Pincode || '';
+  $('prefDate').value = found.prefDate || found.PrefDate || '';
+  populateTimeSlots();
+  setSelectValue('prefTime', found.prefTime || found.PrefTime || '');
+  selectedTests = (found.tests && found.tests.length) ? found.tests.map(x=>Object.assign({}, x)) : [];
+  selectedPackages = (found.packages && found.packages.length) ? found.packages.map(x=>Object.assign({}, x)) : [];
+  renderSelectedLists();
+  $('discountSelect').value = (found.discountPercent !== undefined ? String(found.discountPercent) : (found.DiscountPercent !== undefined ? String(found.DiscountPercent) : '0'));
+  $('techCharge').value = (found.technicianCharge !== undefined ? found.technicianCharge : (found.TechnicianCharge !== undefined ? found.TechnicianCharge : ''));
+  calculateTotals();
+  updateMiniSummary();
+}
+
+function setSelectValue(id, value){
+  const sel = $(id);
+  if(!sel) return;
+  const opt = Array.from(sel.options).find(o => o.value === value || o.text === value);
+  if(opt) sel.value = opt.value;
+  else { const tmp = document.createElement('option'); tmp.value = value || ''; tmp.text = value || ''; sel.appendChild(tmp); sel.value = tmp.value; }
+}
+
+/* ============================
+   Report Generated & Cancel actions (sync to sheet)
+   ============================ */
+async function onReportGenerated(id){
+  try {
+    await changeBookingStatusInSheet(id, 'Report Generated');
+    const bIdx = bookings.findIndex(b => b.id === id || b.ID === id);
+    if (bIdx >= 0) { bookings[bIdx].status = 'Report Generated'; bookings[bIdx].Status = 'Report Generated'; }
+    refreshBookingsUI();
+    if (bIdx >= 0) renderSingleBookingBox(bookings[bIdx]);
+  } catch (err) {
+    alert('Failed to mark Report Generated: ' + err.message);
+    console.error(err);
+  }
+}
+
+async function onCancel(id){
+  if (!confirm('Are you sure you want to cancel this booking?')) return;
+  try {
+    await changeBookingStatusInSheet(id, 'Canceled');
+    const bIdx = bookings.findIndex(b => b.id === id || b.ID === id);
+    if (bIdx >= 0) { bookings[bIdx].status = 'Canceled'; bookings[bIdx].Status = 'Canceled'; }
+    refreshBookingsUI();
+    if (bIdx >= 0) renderSingleBookingBox(bookings[bIdx]);
+  } catch (err) {
+    alert('Failed to cancel booking: ' + err.message);
+    console.error(err);
+  }
+}
+
+/* ============================
+   DOB -> Age behavior
+   ============================ */
+document.addEventListener('change', (e)=>{
+  if (e.target && e.target.id === 'dob'){
+    const v = e.target.value;
+    if (v) $('age').value = calcAge(new Date(v));
+  }
+});
+function calcAge(dob){
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+  return age >= 0 ? age : 0;
+}
+
+/* ============================
+   Time slots (6:00 - 18:00, 30m)
+   ============================ */
+function populateTimeSlots(){
+  const sel = $('prefTime');
+  if(!sel) return;
+  sel.innerHTML = '';
+  const start = 6, end = 18;
+  for(let h=start; h<end; h++){
+    for(let m of [0,30]){
+      const from = formatTime(h,m);
+      let toH = h, toM = m + 30;
+      if (toM >= 60) { toH += 1; toM -= 60; }
+      const to = formatTime(toH,toM);
+      const label = `${from} - ${to}`;
+      const opt = document.createElement('option'); opt.value = label; opt.textContent = label;
+      sel.appendChild(opt);
+    }
+  }
+}
+function formatTime(h,m){
+  const d = new Date(); d.setHours(h); d.setMinutes(m); d.setSeconds(0);
+  return d.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+}
+
+/* ============================
+   Tests & Packages render
+   ============================ */
+function renderTestsList(){
+  const q = ($('searchTests')?.value || '').toLowerCase().trim();
+  const container = $('testsList'); container.innerHTML = '';
+  if(TESTS.length === 0){
+    container.innerHTML = '<div class="small-muted">No tests available (admin list empty).</div>'; return;
+  }
+  TESTS.filter(t => t.name.toLowerCase().includes(q) || (t.code||'').toLowerCase().includes(q))
+    .forEach(t=>{
+      const d = document.createElement('div'); d.style.display='flex'; d.style.justifyContent='space-between'; d.style.alignItems='center';
+      d.style.padding='6px 4px'; d.style.borderBottom='1px solid #f4f4f4';
+      d.innerHTML = `<div><strong>${escapeHtml(t.name)}</strong><div class="small-muted">${escapeHtml(t.code || '')}</div></div>
+        <div style="text-align:right"><div class="small-muted">₹ ${t.cost}</div><button onclick="toggleTest('${escapeForAttr(t.code || t.name)}')">Add</button></div>`;
+      container.appendChild(d);
+    });
+}
+function renderPackagesList(){
+  const q = ($('searchPackages')?.value || '').toLowerCase().trim();
+  const container = $('packagesList'); container.innerHTML = '';
+  if(PACKAGES.length === 0){
+    container.innerHTML = '<div class="small-muted">No packages available (admin list empty).</div>'; return;
+  }
+  PACKAGES.filter(p => p.name.toLowerCase().includes(q) || (p.code||'').toLowerCase().includes(q))
+    .forEach(p=>{
+      const d = document.createElement('div'); d.style.display='flex'; d.style.justifyContent='space-between'; d.style.alignItems='center';
+      d.style.padding='6px 4px'; d.style.borderBottom='1px solid #f4f4f4';
+      d.innerHTML = `<div><strong>${escapeHtml(p.name)}</strong><div class="small-muted">${escapeHtml(p.code || '')}</div></div>
+        <div style="text-align:right"><div class="small-muted">₹ ${p.cost}</div><button onclick="togglePackage('${escapeForAttr(p.code || p.name)}')">Add</button></div>`;
+      container.appendChild(d);
+    });
+}
+
+function escapeForAttr(s){ return (s+'').replace(/'/g,"\\'").replace(/"/g,'\\"'); }
+
+function toggleTest(code){
+  if(TESTS.length === 0) return alert('Test list empty.');
+  const t = TESTS.find(x => (x.code || x.name) === code);
+  if(!t) return;
+  const exists = selectedTests.find(x => (x.code || x.name) === (t.code || t.name));
+  if(exists) selectedTests = selectedTests.filter(x => (x.code || x.name) !== (t.code || t.name));
+  else selectedTests.push(Object.assign({}, t));
+  renderSelectedLists();
+}
+function togglePackage(code){
+  if(PACKAGES.length === 0) return alert('Package list empty.');
+  const p = PACKAGES.find(x => (x.code || x.name) === code);
+  if(!p) return;
+  const exists = selectedPackages.find(x => (x.code || x.name) === (p.code || p.name));
+  if(exists) selectedPackages = selectedPackages.filter(x => (x.code || x.name) !== (p.code || p.name));
+  else selectedPackages.push(Object.assign({}, p));
+  renderSelectedLists();
+}
+function renderSelectedLists(){
+  const tdiv = $('selectedTests'); tdiv.innerHTML = '';
+  selectedTests.forEach(t => {
+    const el = document.createElement('span'); el.className='chip';
+    el.innerHTML = `${escapeHtml(t.name)} (₹${t.cost}) <span class="x" onclick="removeTest('${escapeForAttr(t.code || t.name)}')">✕</span>`;
+    tdiv.appendChild(el);
+  });
+  const pdiv = $('selectedPackages'); pdiv.innerHTML = '';
+  selectedPackages.forEach(p => {
+    const el = document.createElement('span'); el.className='chip';
+    el.innerHTML = `${escapeHtml(p.name)} (₹${p.cost}) <span class="x" onclick="removePackage('${escapeForAttr(p.code || p.name)}')">✕</span>`;
+    pdiv.appendChild(el);
+  });
+  calculateTotals();
+}
+function removeTest(code){ selectedTests = selectedTests.filter(x => (x.code || x.name) !== code); renderSelectedLists(); }
+function removePackage(code){ selectedPackages = selectedPackages.filter(x => (x.code || x.name) !== code); renderSelectedLists(); }
+
+/* ============================
+   Calculations
+   ============================ */
+function calculateTotals(){
+  const testsTotal = selectedTests.reduce((s,t)=> s + (Number(t.cost)||0), 0);
+  const packagesTotal = selectedPackages.reduce((s,p)=> s + (Number(p.cost)||0), 0);
+  const totalAmount = testsTotal + packagesTotal;
+  const discountPercent = Number($('discountSelect')?.value || 0);
+  const discountBase = Math.max(0, totalAmount - packagesTotal);
+  const discountAmount = Math.round((discountBase * discountPercent)/100);
+  const techCharge = Number($('techCharge')?.value || 0);
+  const totalPayable = totalAmount - discountAmount + techCharge;
+
+  $('testsTotal').textContent = `₹ ${testsTotal}`;
+  $('packagesTotal').textContent = `₹ ${packagesTotal}`;
+  $('discountAmount').textContent = `₹ ${discountAmount}`;
+  $('techChargeDisplay').textContent = `₹ ${techCharge}`;
+  $('totalPayable').textContent = `₹ ${totalPayable}`;
+
+  return {testsTotal, packagesTotal, totalAmount, discountAmount, techCharge, totalPayable};
+}
+function previewTotals(){ const r = calculateTotals(); alert('Total payable: ₹ ' + r.totalPayable); }
+
+/* ============================
+   Submit booking (create or update) -> sync to sheet
+   ============================ */
+async function onSubmitBooking(){
+  try {
+    const phone = $('customerPhone').value.trim();
+    if(!/^\d{10}$/.test(phone)) return alert('Enter valid 10-digit phone number.');
+
+    const name = $('customerName').value.trim();
+    if(!/^[a-zA-Z\s]+$/.test(name)) return alert('Customer name should be alphabetic and not empty.');
+
+    const dob = $('dob').value;
+    let age = $('age').value;
+    if(!dob && (!age || Number(age) <= 0)) return alert('Either DOB or Age must be provided.');
+    if(dob && (!age || Number(age) <= 0)) age = calcAge(new Date(dob));
+    age = Number(age);
+
+    const gender = $('gender').value; if(!gender) return alert('Select gender.');
+    const address = $('address').value.trim(); if(!address || address.length>500) return alert('Address required (max 500 chars).');
+    const location = $('location').value.trim(); if(!location || location.length>100) return alert('Location required (max 100 chars).');
+    const city = $('city').value; if(!city) return alert('Select city.');
+    const technician = $('technician').value; if(!technician) return alert('Select technician.');
+    const pincode = $('pincode').value.trim(); if(!/^\d{6}$/.test(pincode)) return alert('Pincode must be 6 digits.');
+    const prefDate = $('prefDate').value; if(!prefDate) return alert('Select preferred date.');
+    const today = new Date(); today.setHours(0,0,0,0); if(new Date(prefDate) < today) return alert('Preferred date must be today or later.');
+    const prefTime = $('prefTime').value; if(!prefTime) return alert('Select preferred time.');
+
+    const conflict = bookings.find(b => (b.technician === technician || b.Technician === technician) &&
+      (b.prefDate === prefDate || b.PrefDate === prefDate) && (b.prefTime === prefTime || b.PrefTime === prefTime) &&
+      (b.status !== 'Canceled' && b.Status !== 'Canceled') &&
+      (b.id !== currentEditId && b.ID !== currentEditId));
+    if(conflict) return alert('Preferred time not available for this technician. Choose another slot.');
+
+    if(selectedTests.length === 0 && selectedPackages.length === 0) return alert('Select at least one test or package.');
+
+    const calc = calculateTotals();
+
+    const nowISOString = new Date().toISOString();
+    const IDval = currentEditId || ('B' + Date.now());
+    const bookingRowObj = {
+      ID: IDval,
+      Phone: phone,
+      Name: name,
+      DOB: dob || '',
+      Age: age,
+      Gender: gender,
+      Address: address,
+      Location: location,
+      City: city,
+      Technician: technician,
+      Pincode: pincode,
+      PrefDate: prefDate,
+      PrefTime: prefTime,
+      TestsJSON: JSON.stringify(selectedTests),
+      PackagesJSON: JSON.stringify(selectedPackages),
+      DiscountPercent: Number($('discountSelect')?.value || 0),
+      DiscountAmount: calc.discountAmount,
+      TechnicianCharge: calc.techCharge,
+      TotalPayable: calc.totalPayable,
+      CreatedBy: $('agentUserDisplay').textContent,
+      CreatedAt: currentEditId ? (bookings.find(b=>b.id===currentEditId)?.createdAt || nowISOString) : nowISOString,
+      Status: 'Confirmed',
+      StatusUpdatedAt: nowISOString
+    };
+
+    if (currentEditId){
+      await updateBookingInSheet(bookingRowObj);
+      const idx = bookings.findIndex(b => b.id === currentEditId || b.ID === currentEditId);
+      if (idx >= 0) bookings[idx] = Object.assign({}, bookingRowObj, {id: bookingRowObj.ID});
+      alert('Booking updated and saved to sheet.');
+    } else {
+      await saveBookingToSheet(bookingRowObj);
+      bookings.push(Object.assign({}, bookingRowObj, {id: bookingRowObj.ID}));
+      alert('Booking created and saved to sheet.');
+    }
+
+    refreshBookingsUI();
+    currentEditId = null;
+    if (branchMode){
+      clearCustomerSpecificFields();
+      lockBranchFields(true);
+    } else resetAll();
+
+  } catch (err){
+    console.error('Submit error', err);
+    showError('Failed to save booking: ' + (err.message || err));
+  }
+}
+
+/* ============================
+   Branch booking helpers
+   ============================ */
+function enableBranchMode(){
+  const required = ['address','location','city','technician','pincode','prefDate','prefTime'];
+  for(const id of required){ if(!$(id).value || $(id).value.trim()==='') return alert('Fill address, location, city, technician, pincode, preferred date & time before enabling Branch Booking.'); }
+  branchMode = true;
+  lockedBranchFields = {
+    address: $('address').value, location: $('location').value, city: $('city').value,
+    technician: $('technician').value, pincode: $('pincode').value, prefDate: $('prefDate').value, prefTime: $('prefTime').value
+  };
+  lockBranchFields(true);
+  alert('Branch Booking enabled — selected fields are now locked for additional tree customers.');
+}
+function lockBranchFields(lock){
+  const ids = ['address','location','city','technician','pincode','prefDate','prefTime'];
+  ids.forEach(id=>{
+    const el = $(id);
+    if(lock){ el.setAttribute('disabled','true'); el.classList.add('locked'); }
+    else { el.removeAttribute('disabled'); el.classList.remove('locked'); }
+  });
+  if(!lock) branchMode = false;
+}
+function clearCustomerSpecificFields(){
+  $('customerName').value=''; $('dob').value=''; $('age').value=''; $('gender').value='';
+  selectedTests = []; selectedPackages = []; renderSelectedLists();
+  $('techCharge').value=''; $('discountSelect').value='0';
+  calculateTotals();
+}
+function resetFormFields(){
+  $('customerName').value=''; $('dob').value=''; $('age').value=''; $('gender').value='';
+  $('address').value=''; $('location').value=''; $('city').value=''; $('technician').value='';
+  $('pincode').value=''; $('prefDate').value=''; $('prefTime').value='';
+  selectedTests = []; selectedPackages = []; $('techCharge').value=''; $('discountSelect').value='0';
+  renderSelectedLists(); calculateTotals();
+}
+function resetAll(){
+  currentEditId = null; branchMode = false; lockedBranchFields = {};
+  $('bookingForm').style.display = 'none';
+  $('customerPhone').value = '';
+  resetFormFields();
+  $('phoneResult').innerHTML = '';
+  $('singleBookingBox').innerHTML = '';
+}
+
+/* ============================
+   Bookings UI rendering / sorting
+   ============================ */
+function refreshBookingsUI(){
+  const order = {"Confirmed":1,"Report Generated":2,"Canceled":3};
+  const list = $('bookingsList'); list.innerHTML = '';
+  const sorted = [...bookings].sort((a,b)=>{
+    const sa = a.Status || a.status || 'Confirmed';
+    const sb = b.Status || b.status || 'Confirmed';
+    if(order[sa] !== order[sb]) return order[sa] - order[sb];
+    return new Date(b.CreatedAt || b.createdAt || 0) - new Date(a.CreatedAt || a.createdAt || 0);
+  });
+  if(sorted.length === 0){ list.innerHTML = '<div class="small-muted">No bookings yet</div>'; return; }
+  sorted.forEach(b=>{
+    const status = b.Status || b.status || 'Confirmed';
+    const statusClass = status === 'Canceled' ? 'status-canceled' : (status === 'Report Generated' ? 'status-report' : 'status-confirmed');
+    const el = document.createElement('div'); el.className = 'summary-card ' + statusClass;
+    el.innerHTML = `<div><strong>${escapeHtml(b.Name || b.name || '(No name)')}</strong> — ${escapeHtml(b.Phone || b.phone)}</div>
+      <div class="small-muted">${escapeHtml(b.PrefDate || b.prefDate || '-') } | ${escapeHtml(b.PrefTime || b.prefTime || '-')} | ${escapeHtml(b.Technician || b.technician || '-')}</div>
+      <div style="margin-top:6px">Status: <strong>${escapeHtml(status)}</strong></div>
+      <div style="margin-top:8px">
+        <button onclick="onModify('${b.ID || b.id}')">📝 Modify</button>
+        <button onclick="onReportGenerated('${b.ID || b.id}')">📄 Report Generated</button>
+        <button onclick="onCancel('${b.ID || b.id}')" style="background:var(--red)">❌ Cancel</button>
+      </div>`;
+    list.appendChild(el);
+  });
+}
+
+/* ============================
+   Populate Technician & Discount selects
+   ============================ */
+function populateTechAndDiscounts(){
+  const techSel = $('technician'); techSel.innerHTML = '<option value="">-- Select Technician --</option>';
+  TECHNICIANS.forEach(t => { const o = document.createElement('option'); o.value = t.name; o.textContent = `${t.name}${t.empId ? ' ('+t.empId+')' : ''}`; techSel.appendChild(o); });
+  const disc = $('discountSelect'); disc.innerHTML = '<option value="0">-- No discount --</option>';
+  DISCOUNTS.forEach(d => { const o = document.createElement('option'); o.value = d; o.textContent = d + '%'; disc.appendChild(o); });
+}
+
+/* ============================
+   Mini summary helper
+   ============================ */
+function updateMiniSummary(){
+  const phone = $('customerPhone').value.trim();
+  const box = $('phoneResult');
+  if(phone) box.innerHTML = `<div class="small-muted">Booking in progress for ${escapeHtml(phone)}</div>`;
+  else box.innerHTML = '';
+}
+
+/* ============================
+   Helper: load all bookings from sheet (used rarely)
+   ============================ */
+async function loadAllBookingsFromSheet(){
+  try {
+    const resp = await fetch(WEB_APP_URL + '?action=bookings'); // no phone => returns all
+    const data = await resp.json();
+    if (!data.success) {
+      if (Array.isArray(data)) {
+        bookings = data.map(r => mapSheetRowToBooking(r));
+      } else {
+        console.warn('loadAllBookingsFromSheet: unexpected response', data);
+      }
+    } else {
+      bookings = (data.bookings || []).map(r => mapSheetRowToBooking(r));
+    }
+    refreshBookingsUI();
+  } catch (err) {
+    console.error('loadAllBookingsFromSheet error', err);
+  }
+}
+
+/* Expose minimal functions globally for button onClick */
+window.onPhoneSearch = onPhoneSearch;
+window.startNewBooking = startNewBooking;
+window.onSubmitBooking = onSubmitBooking;
+window.onModify = onModify;
+window.onReportGenerated = onReportGenerated;
+window.onCancel = onCancel;
+window.toggleTest = toggleTest;
+window.togglePackage = togglePackage;
+window.removeTest = removeTest;
+window.removePackage = removePackage;
+window.enableBranchMode = enableBranchMode;
+window.resetAll = resetAll;
+
+/* Run init on DOM ready */
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Reports - Dr. Labs</title>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(to bottom right, lightblue, lightgreen);
+        text-align: center;
+        padding: 20px;
+    }
+    h1 { margin-bottom: 20px; }
+    .filters {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    select, input, button {
+        padding: 5px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+    table {
+        margin: auto;
+        width: 95%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    th, td {
+        padding: 8px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+    }
+    th {
+        background: #007BFF;
+        color: white;
+    }
+    .status-confirmed { background-color: #c6f6c6; }
+    .status-cancelled { background-color: #f6c6c6; }
+    .status-reported  { background-color: #c6d8f6; }
+</style>
+</head>
+<body>
+    <h1>Reports</h1>
+
+    <div class="filters">
+        <input type="date" id="startDate">
+        <input type="date" id="endDate">
+        <select id="cityFilter"><option value="">All Cities</option></select>
+        <select id="techFilter"><option value="">All Technicians</option></select>
+        <select id="agentFilter"><option value="">All Agents</option></select>
+        <select id="statusFilter">
+            <option value="">All Status</option>
+            <option value="Confirmed">Confirmed</option>
+            <option value="Cancelled">Cancelled</option>
+            <option value="Report Generated">Report Generated</option>
+        </select>
+        <input type="text" id="phoneFilter" placeholder="Phone Number">
+        <button onclick="downloadCSV()">Download CSV</button>
+    </div>
+
+    <table id="reportTable">
+        <thead>
+            <tr>
+                <th>Customer Number</th>
+                <th>Customer Name</th>
+                <th>Location</th>
+                <th>Preferred Date & Time</th>
+                <th>Agent Name</th>
+                <th>Technician Name</th>
+                <th>Status</th>
+                <th>Total Cost</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td colspan="8">Loading...</td></tr>
+        </tbody>
+    </table>
+
+<script>
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxA10MuQPMg-8yTtGh2VwyTTW9jbUEcDGex3wkdmIX5oEj_RkCKYINiSo4E7IE8u-Xzhw/exec'; // Replace with your deployed Google Apps Script URL
+let allBookings = [];
+let filteredBookings = [];
+
+async function loadReports() {
+    try {
+        const res = await fetch(`${WEB_APP_URL}?action=allBookings`);
+        const data = await res.json();
+        if (!data.success) throw new Error("Failed to load bookings");
+
+        allBookings = data.bookings || [];
+        populateDropdowns();
+        applyFilters();
+    } catch (err) {
+        console.error(err);
+        document.querySelector("#reportTable tbody").innerHTML =
+            "<tr><td colspan='8'>Error loading reports</td></tr>";
+    }
+}
+
+function populateDropdowns() {
+    const citySet = new Set();
+    const techSet = new Set();
+    const agentSet = new Set();
+
+    allBookings.forEach(b => {
+        if (b.City) citySet.add(b.City);
+        if (b.Technician) techSet.add(b.Technician);
+        if (b.CreatedBy) agentSet.add(b.CreatedBy);
+    });
+
+    fillSelect("cityFilter", citySet);
+    fillSelect("techFilter", techSet);
+    fillSelect("agentFilter", agentSet);
+}
+
+function fillSelect(id, values) {
+    const select = document.getElementById(id);
+    [...values].sort().forEach(v => {
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = v;
+        select.appendChild(opt);
+    });
+}
+
+function renderTable(bookings) {
+    const tbody = document.querySelector("#reportTable tbody");
+    tbody.innerHTML = "";
+
+    if (!bookings.length) {
+        tbody.innerHTML = "<tr><td colspan='8'>No results</td></tr>";
+        return;
+    }
+
+    bookings.forEach(b => {
+        const row = document.createElement("tr");
+        const statusClass =
+            b.Status === "Cancelled" ? "status-cancelled" :
+            b.Status === "Report Generated" ? "status-reported" :
+            b.Status === "Confirmed" ? "status-confirmed" : "";
+
+        row.className = statusClass;
+        row.innerHTML = `
+            <td>${b.Phone || ""}</td>
+            <td>${b.Name || ""}</td>
+            <td>${b.Location || ""}</td>
+            <td>${b.PrefDate || ""} ${b.PrefTime || ""}</td>
+            <td>${b.CreatedBy || ""}</td>
+            <td>${b.Technician || ""}</td>
+            <td>${b.Status || ""}</td>
+            <td>${b.TotalPayable || ""}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function applyFilters() {
+    const startDate = document.getElementById("startDate").value;
+    const endDate = document.getElementById("endDate").value;
+    const city = document.getElementById("cityFilter").value;
+    const tech = document.getElementById("techFilter").value;
+    const agent = document.getElementById("agentFilter").value;
+    const status = document.getElementById("statusFilter").value;
+    const phone = document.getElementById("phoneFilter").value.trim();
+
+    filteredBookings = allBookings.filter(b => {
+        const bookingDate = b.PrefDate ? new Date(b.PrefDate) : null;
+
+        if (startDate && (!bookingDate || bookingDate < new Date(startDate))) return false;
+        if (endDate && (!bookingDate || bookingDate > new Date(endDate))) return false;
+        if (city && b.City !== city) return false;
+        if (tech && b.Technician !== tech) return false;
+        if (agent && b.CreatedBy !== agent) return false;
+        if (status && b.Status !== status) return false;
+        if (phone && !String(b.Phone).includes(phone)) return false;
+
+        return true;
+    });
+
+    renderTable(filteredBookings);
+}
+
+function downloadCSV() {
+    if (!filteredBookings.length) {
+        alert("No data to download!");
+        return;
+    }
+
+    const headers = ["Customer Number", "Customer Name", "Location", "Preferred Date & Time", "Agent Name", "Technician Name", "Status", "Total Cost"];
+    const rows = filteredBookings.map(b => [
+        b.Phone || "",
+        b.Name || "",
+        b.Location || "",
+        `${b.PrefDate || ""} ${b.PrefTime || ""}`,
+        b.CreatedBy || "",
+        b.Technician || "",
+        b.Status || "",
+        b.TotalPayable || ""
+    ]);
+
+    let csvContent = [headers, ...rows].map(e => e.map(v => `"${v}"`).join(",")).join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    const today = new Date().toISOString().split("T")[0];
+    link.download = `report-${today}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadReports();
+    document.querySelectorAll(".filters select, .filters input").forEach(el => {
+        el.addEventListener("input", applyFilters);
+    });
+});
+</script>
+</body>
+</html>

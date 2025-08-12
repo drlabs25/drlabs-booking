@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Create Agent Credential - Dr. Labs</title>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(to bottom right, lightblue, lightgreen);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    .form-box {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        width: 350px;
+        text-align: center;
+    }
+    input {
+        width: 90%;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+    button {
+        padding: 10px 20px;
+        font-size: 1em;
+        background: #007BFF;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    button:hover {
+        background: #0056b3;
+    }
+    .list {
+        margin-top: 20px;
+        text-align: left;
+    }
+    .toggle {
+        padding: 5px 10px;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+        background: #28a745;
+        color: white;
+    }
+    .inactive {
+        background: #dc3545;
+    }
+</style>
+</head>
+<body>
+<div class="form-box">
+    <h2>Create Agent Credential</h2>
+    <input type="text" id="agentUser" placeholder="Username">
+    <input type="password" id="agentPass" placeholder="Password">
+    <button onclick="createAgent()">Submit</button>
+
+    <div class="list" id="agentList"></div>
+</div>
+
+<script>
+    let agents = [];
+
+    function createAgent() {
+        const username = document.getElementById('agentUser').value;
+        const password = document.getElementById('agentPass').value;
+        if (!username || !password) {
+            alert("Please fill in all fields");
+            return;
+        }
+        agents.push({username, password, active: true});
+        renderList();
+        document.getElementById('agentUser').value = '';
+        document.getElementById('agentPass').value = '';
+    }
+
+    function toggleStatus(index) {
+        agents[index].active = !agents[index].active;
+        renderList();
+    }
+
+    function renderList() {
+        const listDiv = document.getElementById('agentList');
+        listDiv.innerHTML = '';
+        agents.forEach((agent, index) => {
+            listDiv.innerHTML += `
+                <div>
+                    ${agent.username} - ${agent.active ? 'Active' : 'Inactive'}
+                    <button class="toggle ${!agent.active ? 'inactive' : ''}" onclick="toggleStatus(${index})">
+                        ${agent.active ? 'Deactivate' : 'Activate'}
+                    </button>
+                </div>
+            `;
+        });
+    }
+</script>
+</body>
+</html>
